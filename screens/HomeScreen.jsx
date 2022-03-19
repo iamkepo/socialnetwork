@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     minHeight: screen.height,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: "flex-start",
+    justifyContent: "center",
     paddingTop: 20,
     paddingBottom: 100
   },

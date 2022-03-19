@@ -20,14 +20,14 @@ export default function App() {
       <AnimatedAppLoader>
         <NavigationContainer>
           <Stack.Navigator>
-            <Stack.Screen 
-              name="Main" 
+            <Stack.Screen
+              name="MainNavigator"
               component={props => {
                 const navigation = useNavigation();
                 const route = useRoute();
                 return <MainNavigator {...props} route={route} navigation={navigation} />;
               }}
-              options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}} 
+              options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
             />
           </Stack.Navigator>
         </NavigationContainer>

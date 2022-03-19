@@ -35,7 +35,7 @@ class HomeNavigator extends React.Component {
     return (
         <Stack.Navigator>
           <Stack.Screen
-            name="Home"
+            name="HomeScreen"
             component={HomeScreen}
             route={this.route}
             navigation={this.navigation}
