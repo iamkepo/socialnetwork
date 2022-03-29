@@ -8,6 +8,8 @@ import { bindActionCreators } from 'redux';
 import { setStateAction } from '../store/ActivityActions';
 
 import HomeScreen from '../screens/HomeScreen';
+import UpdateScreen from '../screens/UpdateScreen';
+import UploadScreen from '../screens/UploadScreen';
 
 
 const Stack = createStackNavigator();
@@ -33,15 +35,29 @@ class HomeNavigator extends React.Component {
 
   render(){
     return (
-        <Stack.Navigator>
-          <Stack.Screen
-            name="HomeScreen"
-            component={HomeScreen}
-            route={this.route}
-            navigation={this.navigation}
-            options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
-          />
-        </Stack.Navigator>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="UpdateScreen"
+          component={UpdateScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="UploadScreen"
+          component={UploadScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+      </Stack.Navigator>
     );
   }
 }
