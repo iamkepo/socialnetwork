@@ -1,14 +1,16 @@
 import React from 'react';
-import { StyleSheet, Text, View, Dimensions, ScrollView, BackHandler, TouchableOpacity, RefreshControl, Image, StatusBar, ActivityIndicator } from 'react-native';
+import { StyleSheet, Dimensions, ScrollView, BackHandler, TouchableOpacity, RefreshControl, StatusBar, ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Entypo } from 'react-native-vector-icons';
+import { Entypo, Fontisto, AntDesign } from 'react-native-vector-icons';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { setStateAction, getPostsAction } from '../store/ActivityActions';
 
-import { normalize } from "../utils/fonts";
 import { checkversion, getposts } from "../utils/sender";
+import { normalize } from "../utils/fonts";
+
+import PostViewComponent from "../components/PostViewComponent";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
@@ -78,29 +80,38 @@ class HomeScreen extends React.Component {
   render(){
     return (
       <SafeAreaView style={styles.container}>
+        <StatusBar backgroundColor="#000" barStyle="light-content" />
+
+        <View style={styles.boxaction} >
+          <TouchableOpacity onPress={()=> console.log(1)}>
+            <AntDesign name="user" size={30} color="#FFF"/>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={()=> console.log(1)}>
+            <Text style={styles.text} >{this.props.data.profil.solde} </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={()=> console.log(1)}>
+            <Fontisto name="messenger" size={30} color="#FFF"/>
+          </TouchableOpacity>
+        </View>
+
         {
           this.state.ready ?
           <ScrollView
             contentContainerStyle={styles.scrollView}
             refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={()=>this.onRefresh()} />}
           >
-          {
-            this.props.data.posts.map((post, i)=>(
-              <View style={styles.posts} key={i}>
-                <Image source={{uri: "https://iamkepo.github.io/iamkepo/IMG_20220126_121921_848.webp"}} style={{ resizeMode: "contain", height: "90%"}} />
-                <Text style={styles.text} >Titre: {post.title}</Text>
-              </View>
-            ))
-          }
+            { this.props.data.posts.map((post, i)=>( <PostViewComponent post={post} key={i} /> )) }
           </ScrollView>
           :
-          <ActivityIndicator size="large" color="f00" />
+          <ActivityIndicator size="large" color="F00" />
         }
 
         <TouchableOpacity onPress={()=> this.navigation.navigate("UploadScreen") } style={styles.newpost}>
           <Entypo name="plus" size={30} color="#FFF"/>
         </TouchableOpacity>
-        <StatusBar backgroundColor="#000" barStyle="light-content" />
+
       </SafeAreaView>
     );
   }
@@ -112,25 +123,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: "#000",
   },
+  boxaction: {
+    width: "90%",
+    height: 50,
+    borderRadius: 50,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: 'center',
+    justifyContent: "space-between",
+    position: "absolute",
+    top: 0,
+    zIndex: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
   scrollView: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  posts: {
-    width: screen.width,
-    height: screen.height-110,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: 'center',
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#FFF",
-    marginBottom: 70,
-    paddingBottom: 50
-  },
   text: {
-    fontSize: normalize(15),
-    color: "#FFF"
+    fontSize: normalize(20),
+    color: "#FFF",
   },
   newpost: {
     width: 60,

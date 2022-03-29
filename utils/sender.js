@@ -1,8 +1,8 @@
 import axios from "axios";
 import * as FileSystem from 'expo-file-system';
 
-const baseURL = "http://192.168.117.26:3000";
-
+// const baseURL = "http://192.168.117.26:3000";
+const baseURL = "https://api-socialnet.herokuapp.com/";
 export function checkversion(param) {
   return axios({
     method: 'get',

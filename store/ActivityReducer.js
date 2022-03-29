@@ -3,6 +3,9 @@ import { combineReducers } from 'redux';
 import { session } from "../utils/session";
 
 const INITIAL_STATE = {
+  profil: {
+    solde: 0.00000567001
+  },
   etat: {},
   posts: []
 };
