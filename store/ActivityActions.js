@@ -4,3 +4,9 @@ export const setStateAction = index => (
     payload: index,
   }
 );
+export const getPostsAction = index => (
+  {
+    type: 'GETPOSTS',
+    payload: index,
+  }
+);

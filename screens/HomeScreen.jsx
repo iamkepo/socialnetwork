@@ -1,17 +1,19 @@
 import React from 'react';
-import { StyleSheet, Text, View, Dimensions, ScrollView, BackHandler, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, ScrollView, BackHandler, TouchableOpacity, RefreshControl, Image, StatusBar, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Entypo } from 'react-native-vector-icons';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { setStateAction } from '../store/ActivityActions';
+import { setStateAction, getPostsAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
-import { checkversion } from "../utils/sender";
+import { checkversion, getposts } from "../utils/sender";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
-    setStateAction
+    setStateAction,
+    getPostsAction
   }, dispatch)
 );
 
@@ -21,11 +23,16 @@ const mapStateToProps = (state) => {
 };
 
 const screen = Dimensions.get("screen");
-
+const wait = timeout => {
+  return new Promise(resolve => setTimeout(resolve, timeout));
+};
 class HomeScreen extends React.Component {
   constructor (props) {
     super(props);
-    this.state = {};
+    this.state = {
+      refreshing: false,
+      ready: false
+    };
     this.navigation = this.props.navigation;
     this.route = this.props.route;
   }
@@ -39,13 +46,13 @@ class HomeScreen extends React.Component {
    this.backHandler.remove();
   }
 
-
   async componentDidMount(){
-
     checkversion("0.0.1").then((response)=>{
       //console.log(response.data.response);
       if (response.data.response == false) {
         this.navigation.navigate("UpdateScreen");
+      }else{
+        this.onRefresh();
       }
     }).catch((error)=>{
       console.log(error);
@@ -56,39 +63,74 @@ class HomeScreen extends React.Component {
       this.backAction
     );
   }
+  onRefresh(){
+    this.setState({refreshing: true});
+    getposts().then((response)=>{
+      //console.log(response.data[0]);
+      this.props.getPostsAction(response.data);
+      this.setState({ready: true});
+    }).catch((error)=>{
+      console.log(error);
+    })
+    wait(2000).then(() => this.setState({refreshing: false}));
+  };
 
   render(){
     return (
-      <View style={styles.container}>
-        <View style={styles.posts}>
+      <SafeAreaView style={styles.container}>
+        {
+          this.state.ready ?
+          <ScrollView
+            contentContainerStyle={styles.scrollView}
+            refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={()=>this.onRefresh()} />}
+          >
+          {
+            this.props.data.posts.map((post, i)=>(
+              <View style={styles.posts} key={i}>
+                <Image source={{uri: "https://iamkepo.github.io/iamkepo/IMG_20220126_121921_848.webp"}} style={{ resizeMode: "contain", height: "90%"}} />
+                <Text style={styles.text} >Titre: {post.title}</Text>
+              </View>
+            ))
+          }
+          </ScrollView>
+          :
+          <ActivityIndicator size="large" color="f00" />
+        }
 
-          <Text style={styles.text} >HomeScreen</Text>
-
-
-        </View>
-          <TouchableOpacity onPress={()=> this.navigation.navigate("UploadScreen") } style={styles.newpost}>
-            <Entypo name="plus" size={30} color="#FFF"/>
-          </TouchableOpacity>
-      </View>
+        <TouchableOpacity onPress={()=> this.navigation.navigate("UploadScreen") } style={styles.newpost}>
+          <Entypo name="plus" size={30} color="#FFF"/>
+        </TouchableOpacity>
+        <StatusBar backgroundColor="#000" barStyle="light-content" />
+      </SafeAreaView>
     );
   }
 }
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    minHeight: screen.height,
-    paddingTop: 30,
-    backgroundColor: '#fff',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#000",
+  },
+  scrollView: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   posts: {
-    width: "100%",
-    minHeight: "100%",
-    backgroundColor: '#fff',
+    width: screen.width,
+    height: screen.height-110,
+    display: "flex",
+    flexDirection: "column",
     alignItems: 'center',
-    justifyContent: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#FFF",
+    marginBottom: 70,
+    paddingBottom: 50
   },
   text: {
-    fontSize: normalize(15)
+    fontSize: normalize(15),
+    color: "#FFF"
   },
   newpost: {
     width: 60,

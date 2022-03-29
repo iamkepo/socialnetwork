@@ -3,8 +3,8 @@ import { combineReducers } from 'redux';
 import { session } from "../utils/session";
 
 const INITIAL_STATE = {
-  etat: {}
-
+  etat: {},
+  posts: []
 };
 
 function monReducer (state = INITIAL_STATE, action) {
@@ -13,11 +13,21 @@ function monReducer (state = INITIAL_STATE, action) {
 
     case 'STATE':
 
-      state.etat[action.payload.index] = action.payload.value
+      state.etat[action.payload.index] = action.payload.value;
 
       nextState = {
           ...state,
           myState: state.etat
+      }
+      return nextState;
+
+      case 'GETPOSTS':
+
+      state.posts = action.payload;
+
+      nextState = {
+          ...state,
+          myState: state.posts
       }
       return nextState
 
