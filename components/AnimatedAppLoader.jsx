@@ -9,7 +9,7 @@ import AnimatedSplashScreen from './AnimatedSplashScreen';
 SplashScreen.preventAutoHideAsync()
   .catch(() => { /* reloading the app might trigger some race conditions, ignore them */ });
 
-export default function AnimatedAppLoader({ children }) {
+export default function AnimatedAppLoader(props) {
   const [isSplashReady, setSplashReady] = React.useState(false);
 
   const startAsync = React.useMemo(
@@ -32,5 +32,5 @@ export default function AnimatedAppLoader({ children }) {
     );
   }
 
-  return <AnimatedSplashScreen image={require("../assets/splash.png")}>{children}</AnimatedSplashScreen>;
+  return <AnimatedSplashScreen image={require("../assets/splash.png")}>{props.children}</AnimatedSplashScreen>;
 }

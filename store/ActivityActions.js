@@ -4,6 +4,13 @@ export const setStateAction = index => (
     payload: index,
   }
 );
+export const userAction = (index, value) => (
+  {
+    type: 'USER',
+    index: index,
+    value: value
+  }
+);
 export const getPostsAction = index => (
   {
     type: 'GETPOSTS',

@@ -3,7 +3,8 @@ import { combineReducers } from 'redux';
 import { session } from "../utils/session";
 
 const INITIAL_STATE = {
-  profil: {
+  user: {
+    id: "",
     solde: 0.00000567001
   },
   etat: {},
@@ -22,9 +23,22 @@ function monReducer (state = INITIAL_STATE, action) {
           ...state,
           myState: state.etat
       }
-      return nextState;
+    return nextState;
 
-      case 'GETPOSTS':
+    case 'USER':
+
+      state.user[action.index] = action.value;
+
+      //session(state.user);
+
+      nextState = {
+          ...state,
+          user: state.user
+      }
+
+    return nextState;
+
+    case 'GETPOSTS':
 
       state.posts = action.payload;
 
@@ -32,7 +46,8 @@ function monReducer (state = INITIAL_STATE, action) {
           ...state,
           myState: state.posts
       }
-      return nextState
+
+    return nextState
 
     //...
     default:

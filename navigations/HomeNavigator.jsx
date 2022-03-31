@@ -10,6 +10,11 @@ import { setStateAction } from '../store/ActivityActions';
 import HomeScreen from '../screens/HomeScreen';
 import UpdateScreen from '../screens/UpdateScreen';
 import UploadScreen from '../screens/UploadScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import DiscussionScreen from '../screens/DiscussionScreen';
+import MessageScreen from '../screens/MessageScreen';
+import SinglePostScreen from '../screens/SinglePostScreen';
+import CashScreen from '../screens/CashScreen';
 
 
 const Stack = createStackNavigator();
@@ -53,6 +58,41 @@ class HomeNavigator extends React.Component {
         <Stack.Screen
           name="UploadScreen"
           component={UploadScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="ProfileScreen"
+          component={ProfileScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="DiscussionScreen"
+          component={DiscussionScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="MessageScreen"
+          component={MessageScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="SinglePostScreen"
+          component={SinglePostScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="CashScreen"
+          component={CashScreen}
           route={this.route}
           navigation={this.navigation}
           options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}

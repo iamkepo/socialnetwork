@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, Dimensions, ScrollView, BackHandler, TouchableOpacity, RefreshControl, StatusBar, ActivityIndicator, Text, View } from 'react-native';
+import { Animated, StyleSheet, Dimensions, ScrollView, BackHandler, TouchableOpacity, RefreshControl, StatusBar, ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Entypo, Fontisto, AntDesign } from 'react-native-vector-icons';
+import { Entypo, EvilIcons, AntDesign } from 'react-native-vector-icons';
+import PagerView from 'react-native-pager-view';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -11,6 +12,8 @@ import { checkversion, getposts } from "../utils/sender";
 import { normalize } from "../utils/fonts";
 
 import PostViewComponent from "../components/PostViewComponent";
+
+const AnimatedPager = Animated.createAnimatedComponent(PagerView);
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
@@ -25,6 +28,7 @@ const mapStateToProps = (state) => {
 };
 
 const screen = Dimensions.get("screen");
+
 const wait = timeout => {
   return new Promise(resolve => setTimeout(resolve, timeout));
 };
@@ -33,7 +37,8 @@ class HomeScreen extends React.Component {
     super(props);
     this.state = {
       refreshing: false,
-      ready: false
+      ready: false,
+      i: 0
     };
     this.navigation = this.props.navigation;
     this.route = this.props.route;
@@ -49,7 +54,7 @@ class HomeScreen extends React.Component {
   }
 
   async componentDidMount(){
-    checkversion("0.0.1").then((response)=>{
+    checkversion().then((response)=>{
       //console.log(response.data.response);
       if (response.data.response == false) {
         this.navigation.navigate("UpdateScreen");
@@ -65,6 +70,7 @@ class HomeScreen extends React.Component {
       this.backAction
     );
   }
+
   onRefresh(){
     this.setState({refreshing: true});
     getposts().then((response)=>{
@@ -83,32 +89,66 @@ class HomeScreen extends React.Component {
         <StatusBar backgroundColor="#000" barStyle="light-content" />
 
         <View style={styles.boxaction} >
-          <TouchableOpacity onPress={()=> console.log(1)}>
+
+          <TouchableOpacity
+            onPress={()=> this.navigation.navigate("ProfileScreen", { user_id: this.props.data.user.id })}
+            style={styles.profil}
+          >
             <AntDesign name="user" size={30} color="#FFF"/>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={()=> console.log(1)}>
-            <Text style={styles.text} >{this.props.data.profil.solde} </Text>
+          <TouchableOpacity onPress={()=>  this.navigation.navigate("CashScreen")}>
+            <Text style={styles.text} > {this.props.data.user.solde} </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={()=> console.log(1)}>
-            <Fontisto name="messenger" size={30} color="#FFF"/>
+          <TouchableOpacity
+            onPress={()=> this.navigation.navigate("DiscussionScreen")}
+          >
+            <EvilIcons name="comment" size={40} color="#FFF"/>
           </TouchableOpacity>
+
         </View>
 
         {
           this.state.ready ?
           <ScrollView
             contentContainerStyle={styles.scrollView}
-            refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={()=>this.onRefresh()} />}
+            refreshControl={
+              this.state.i == 0 ?
+              <RefreshControl
+                refreshing={this.state.refreshing}
+                onRefresh={()=>this.onRefresh()}
+              />
+              :
+              false
+            }
           >
-            { this.props.data.posts.map((post, i)=>( <PostViewComponent post={post} key={i} /> )) }
+            <AnimatedPager
+              style={styles.pagerView}
+              initialPage={this.state.i}
+              onPageSelected={(e)=> this.setState({i: e.nativeEvent.position})}
+              orientation="vertical"
+            >
+              {
+                this.props.data.posts.map((post, i)=>(
+                  <PostViewComponent key={i}
+                    repost={()=>this.navigation.navigate('UploadScreen', { post: post })}
+                    gotouser={()=> this.navigation.navigate("ProfileScreen", { user_id: post.user_id })}
+                    gotocomment={()=> this.navigation.navigate("MessageScreen", { user_id: post.user_id })}
+                    post={post}
+                    i={i}
+                    onScreen={this.state.i}
+                    user={this.props.data.user}
+                  />
+                ))
+              }
+            </AnimatedPager>
           </ScrollView>
           :
           <ActivityIndicator size="large" color="F00" />
         }
 
-        <TouchableOpacity onPress={()=> this.navigation.navigate("UploadScreen") } style={styles.newpost}>
+        <TouchableOpacity onPress={()=> this.navigation.navigate("UploadScreen", { post: undefined })} style={styles.newpost}>
           <Entypo name="plus" size={30} color="#FFF"/>
         </TouchableOpacity>
 
@@ -124,9 +164,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
   },
   boxaction: {
-    width: "90%",
+    width: "100%",
     height: 50,
-    borderRadius: 50,
     display: "flex",
     flexDirection: "row",
     alignItems: 'center',
@@ -135,13 +174,36 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 5,
     backgroundColor: "rgba(0, 0, 0, 0.2)",
+    paddingHorizontal: "1%"
+  },
+  profil: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F00",
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowRadius: 5,
+    shadowOffset: {
+      height: 10,
+      width: 10
+    },
+    shadowOpacity: 0.5,
+    elevation : 10,
   },
   scrollView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pagerView: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    fontSize: normalize(20),
+    fontSize: normalize(18),
     color: "#FFF",
   },
   newpost: {
@@ -152,8 +214,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F00",
     borderRadius: 50,
     position: "absolute",
-    bottom: 20,
-    right: screen.width/2.5,
+    bottom: 30,
     zIndex: 5,
     shadowColor: '#000',
     shadowRadius: 5,

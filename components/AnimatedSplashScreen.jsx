@@ -2,7 +2,21 @@ import React from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { Animated, StyleSheet, View } from 'react-native';
 
-export default function AnimatedSplashScreen({ children, image }) {
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { userAction } from '../store/ActivityActions';
+
+const mapDispatchToProps = dispatch => (
+  bindActionCreators({
+    userAction
+  }, dispatch)
+);
+
+const mapStateToProps = (state) => {
+  const { data } = state
+  return { data }
+};
+function AnimatedSplashScreen(props) {
   const animation = React.useMemo(() => new Animated.Value(1), []);
   const [isAppReady, setAppReady] = React.useState(false);
   const [isSplashAnimationComplete, setAnimationComplete] = React.useState(
@@ -10,6 +24,7 @@ export default function AnimatedSplashScreen({ children, image }) {
   );
 
   React.useEffect(() => {
+    props.userAction("id", "user"+ Date.now())
     if (isAppReady) {
       Animated.timing(animation, {
         toValue: 0,
@@ -33,7 +48,7 @@ export default function AnimatedSplashScreen({ children, image }) {
 
   return (
     <View style={{ flex: 1 }}>
-      {isAppReady && children}
+      {isAppReady && props.children}
       {!isSplashAnimationComplete && (
         <Animated.View
           pointerEvents="none"
@@ -56,7 +71,7 @@ export default function AnimatedSplashScreen({ children, image }) {
                 },
               ],
             }}
-            source={image}
+            source={props.image}
             onLoadEnd={onImageLoaded}
             fadeDuration={0}
           />
@@ -65,3 +80,4 @@ export default function AnimatedSplashScreen({ children, image }) {
     </View>
   );
 }
+export default connect(mapStateToProps, mapDispatchToProps)(AnimatedSplashScreen);
