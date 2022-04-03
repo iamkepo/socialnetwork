@@ -13,6 +13,7 @@ import UploadScreen from '../screens/UploadScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import DiscussionScreen from '../screens/DiscussionScreen';
 import MessageScreen from '../screens/MessageScreen';
+import CommentScreen from '../screens/CommentScreen';
 import SinglePostScreen from '../screens/SinglePostScreen';
 import CashScreen from '../screens/CashScreen';
 
@@ -79,6 +80,13 @@ class HomeNavigator extends React.Component {
         <Stack.Screen
           name="MessageScreen"
           component={MessageScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="CommentScreen"
+          component={CommentScreen}
           route={this.route}
           navigation={this.navigation}
           options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}

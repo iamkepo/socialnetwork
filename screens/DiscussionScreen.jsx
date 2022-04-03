@@ -1,6 +1,6 @@
 /** Importation globale : */
 import React from 'react';
-import { View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet } from 'react-native';
+import { View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { AntDesign, Ionicons } from 'react-native-vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -23,11 +23,16 @@ const mapStateToProps = (state) => {
 
 const screen = Dimensions.get("screen");
 
+const wait = timeout => {
+  return new Promise(resolve => setTimeout(resolve, timeout));
+};
 class DiscussionScreen extends React.Component {
 
 	constructor(props) {
 		super(props);
-    this.state= {}
+    this.state= {
+      refreshing: false,
+    }
     this.navigation = this.props.navigation;
     this.route = this.props.route;
   }
@@ -49,6 +54,12 @@ class DiscussionScreen extends React.Component {
     );
   }
 
+  onRefresh(){
+    this.setState({refreshing: true});
+
+    wait(2000).then(() => this.setState({refreshing: false}));
+  };
+
   back() {
     this.navigation.goBack()
   }
@@ -66,11 +77,40 @@ class DiscussionScreen extends React.Component {
             Discussion
           </Text>
 
-          <TouchableOpacity onPress={()=> console.log(1)}>
+          <TouchableOpacity onPress={()=> false}>
             <AntDesign name="search1" size={30} color="#FFF"/>
           </TouchableOpacity>
 
         </View>
+
+        <ScrollView
+          contentContainerStyle={styles.scrollView}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={()=>this.onRefresh()}
+            />
+          }
+        >
+          <View style={{height: 30}} />
+
+          {
+            users.map((user, i)=>(
+              <TouchableOpacity key={i}
+                style={styles.discussion}
+                onPress={()=> this.navigation.navigate("MessageScreen", { user_id: i })}
+              >
+                <AntDesign name="user" size={30} color="#FFF"/>
+
+                <View style={styles.textbox}>
+                  <Text style={styles.name}> {user.name} {i} </Text>
+                  <Text style={styles.lastmessage}> {user.lastmessage} </Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          }
+
+        </ScrollView>
 
 			</View>
 		);
@@ -78,6 +118,22 @@ class DiscussionScreen extends React.Component {
 	}
 
 }
+
+const users = [
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" },
+  { name: "user", lastmessage: "comment vas-tu ?" }
+];
 
 const styles = StyleSheet.create({
   container: {
@@ -98,6 +154,42 @@ const styles = StyleSheet.create({
     width: "70%",
     fontSize: normalize(20),
     fontWeight: "bold",
+    color: "#FFF"
+  },
+  scrollView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  discussion: {
+    width: screen.width-30,
+    height: screen.height/10,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: 'center',
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#FFF",
+    borderRadius: 10,
+    marginTop: "5%",
+    paddingLeft: "5%"
+  },
+  textbox: {
+    width: "85%",
+    height: "100%",
+    alignItems: 'center',
+    justifyContent: "space-evenly",
+  },
+  name: {
+    width: "100%",
+    height: "30%",
+    fontSize: normalize(20),
+    fontWeight: "bold",
+    color: "#FFF"
+  },
+  lastmessage: {
+    width: "100%",
+    height: "50%",
+    fontSize: normalize(15),
     color: "#FFF"
   },
 });

@@ -1,18 +1,36 @@
 import React from 'react';
 
 import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ImageBackground } from 'react-native';
-import { Ionicons, FontAwesome, AntDesign } from 'react-native-vector-icons';
+import { Ionicons, FontAwesome, AntDesign, MaterialIcons } from 'react-native-vector-icons';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Video, AVPlaybackStatus } from 'expo-av';
 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { setStateAction, setPostAction } from '../store/ActivityActions';
+
 import { normalize } from "../utils/fonts";
+import { setpost, getpost } from "../utils/sender";
+
+const mapDispatchToProps = dispatch => (
+  bindActionCreators({
+    setStateAction,
+    setPostAction
+  }, dispatch)
+);
+
+const mapStateToProps = (state) => {
+  const { data } = state
+  return { data }
+};
 
 const screen = Dimensions.get("screen");
 
-export default function PostViewComponent(props) {
-  const [heart, setheart] = React.useState(false);
-  const [dislike, setdislike] = React.useState(false);
-  const [share, setshare] = React.useState(false);
+function PostViewComponent(props) {
+  const [heart, setheart] = React.useState((props.post.like.find(item => item == props.data.user._id)) != undefined ? true : false);
+  const [dislike, setdislike] = React.useState((props.post.dislike.find(item => item == props.data.user._id)) != undefined ? true : false);
+  const [share, setshare] = React.useState((props.post.share.find(item => item == props.data.user._id)) != undefined ? true : false);
+  const [vue, setvue] = React.useState((props.post.vue.find(item => item == props.data.user._id)) != undefined ? true : false);
   const [image, setImage] = React.useState(null);
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});
@@ -43,69 +61,129 @@ export default function PostViewComponent(props) {
         image &&
         play ?
         <TouchableOpacity
+          activeOpacity={0.9}
           onPressIn={() => video.current.pauseAsync()}
           onPressOut={() => video.current.playAsync()}
-          style={{ width: "100%", height: "100%"}}
+          style={{ width: "100%", height: "100%", alignItems: "center",justifyContent: "center",}}
         >
           <Video
             ref={video}
             style={{ width: "100%", height: "100%"}}
             source={{ uri: props.post.uri }}
-            shouldPlay={ props.i ==  props.onScreen ? true : false}
-            useNativeControls
+            shouldPlay={ props.i ==  props.onScreen && play ? true : false}
+            // useNativeControls
             resizeMode="contain"
             isLooping
-            onPlaybackStatusUpdate={status => setStatus(() => status)}
+            onPlaybackStatusUpdate={status => (props.i !=  props.onScreen ? setplay(false) : false ,setStatus(() => status))}
           />
+
         </TouchableOpacity>
         :
         <ImageBackground source={{ uri: image }} style={{ resizeMode: "contain", width: "100%", height: "100%", alignItems: "center",justifyContent: "center",}}>
-          <TouchableOpacity style={styles.play}  onPress={()=>setplay(true)}>
-            <Ionicons name="play" size={50} color={"#FFF"}/>
+          <TouchableOpacity style={styles.play}
+            onPress={()=>{
+              setplay(true);
+              if (vue == false) {
+                setvue(true);
+                setpost({ post_id: props.post._id, option: "vue", value: props.data.user._id});
+                getpost(props.post._id).then((response)=>{
+                  props.setPostAction(props.data.posts.indexOf(props.post), response.data);
+                }).catch((error)=>{
+                  console.log(error);
+                })
+              }
+            }}>
+            <Ionicons name="play" size={40} color={"#FFF"}/>
           </TouchableOpacity>
         </ImageBackground>
       }
 
       <View style={styles.boxaction}>
 
-        <TouchableOpacity disabled={dislike ? true : false} onPress={()=> setheart(!heart)}>
+        <TouchableOpacity
+          disabled={dislike ? true : false}
+          onPress={()=> {
+            setheart(!heart);
+            setpost({ post_id: props.post._id, option: heart ? "likeremove" : "likepush", value: props.data.user._id});
+            getpost(props.post._id).then((response)=>{
+              props.setPostAction(props.data.posts.indexOf(props.post), response.data);
+            }).catch((error)=>{
+              console.log(error);
+            })
+          }}
+        >
           <Ionicons name="heart" size={40} color={heart ? "#F00" : "#FFF"}/>
         </TouchableOpacity>
 
-        <Text style={styles.number} >{props.post.like.length}</Text>
+        <Text style={styles.number} > {props.post.like.length - props.post.like.filter(item=> item == null).length} </Text>
 
-        <TouchableOpacity disabled={heart ? true : false} onPress={()=> setdislike(!dislike)}>
+
+        <TouchableOpacity
+          disabled={heart ? true : false}
+          onPress={()=> {
+            setdislike(!dislike);
+            setpost({ post_id: props.post._id, option: dislike ? "dislikeremove" : "dislikepush", value: props.data.user._id});
+            getpost(props.post._id).then((response)=>{
+              props.setPostAction(props.data.posts.indexOf(props.post), response.data);
+            }).catch((error)=>{
+              console.log(error);
+            })
+          }}
+        >
           <Ionicons name="heart-dislike" size={40} color={dislike ? "#F00" : "#FFF"}/>
         </TouchableOpacity>
 
-        <Text style={styles.number} >{props.post.dislike.length}</Text>
+        <Text style={styles.number} > {props.post.dislike.length - props.post.dislike.filter(item=> item == null).length} </Text>
 
         <TouchableOpacity onPress={()=> props.gotocomment()}>
           <FontAwesome name="commenting" size={30} color="#FFF"/>
         </TouchableOpacity>
 
-        <Text style={styles.number} >
-          {/* {props.post.comment.length} */}
-          0
-          </Text>
+        <Text style={styles.number} > {props.post.comment.length - props.post.comment.filter(item=> item == null).length} </Text>
 
-        <TouchableOpacity disabled={share ? true : false} onPress={()=> props.repost()}>
+        <TouchableOpacity
+        disabled={share ? true : false}
+        onPress={()=> props.repost()}>
           <FontAwesome name="send" size={30} color={share ? "#F00" : "#FFF"}/>
         </TouchableOpacity>
 
         <Text style={styles.number} >{props.post.share.length}</Text>
 
-        <TouchableOpacity style={styles.profil} onPress={()=> props.gotouser()}>
-          <AntDesign name="user" size={normalize(20)} color="#FFF"/>
-        </TouchableOpacity>
+        {
+          props.post.user._id == props.data.user._id ?
+          <TouchableOpacity onPress={()=> {
+            setpost({ post_id: props.post._id, option: "delete", value: props.post}).then(()=> props.onRefresh());
+          }}>
+            <MaterialIcons name="delete" size={30} color="#F00"/>
+          </TouchableOpacity>
+          :
+          <TouchableOpacity style={styles.profil} onPress={()=> props.gotouser()}>
+            {
+              props.post.user.photo == "" ?
+              <AntDesign name="user" size={normalize(20)} color="#FFF"/>
+              :
+              <Image source={{uri: props.post.user.photo}} resizeMode="cover" style={{width: "100%", height: "100%"}} />
+            }
+          </TouchableOpacity>
+        }
+
+        {
+          (props.data.user.following.find(item => item == props.post.user._id)) == undefined ?
+          <TouchableOpacity style={styles.number} onPress={()=> false}>
+            <AntDesign name="pluscircle" size={normalize(20)} color="#F00"/>
+          </TouchableOpacity>
+          : false
+        }
 
       </View>
 
       <Text style={styles.text}>
         {props.post.description}
         {"\n"}
-        <AntDesign name="eye" size={normalize(20)} color="#FFF"/>
-        {" " + props.post.vue.length}
+        {props.post.type == "video" ?
+        <><AntDesign name="eye" size={normalize(20)} color={vue ? "#F00" : "#FFF"}/>
+        {" " + (props.post.vue.length)}</>
+        : false}
       </Text>
 
     </View>
@@ -124,8 +202,8 @@ const styles = StyleSheet.create({
     position: "relative"
   },
   play: {
-    width: 100,
-    height: 100,
+    width: 70,
+    height: 70,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 50,
@@ -154,7 +232,8 @@ const styles = StyleSheet.create({
     color: "#FFF",
     alignItems: 'flex-start',
     position: "absolute",
-    bottom: 50,
+    bottom: 20,
+    paddingRight: 50,
   },
   boxaction: {
     width: 50,
@@ -176,3 +255,4 @@ const styles = StyleSheet.create({
     marginTop: -20
   },
 });
+export default connect(mapStateToProps, mapDispatchToProps)(PostViewComponent);

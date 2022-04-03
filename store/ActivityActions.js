@@ -17,3 +17,11 @@ export const getPostsAction = index => (
     payload: index,
   }
 );
+export const setPostAction = (index, value) => (
+  {
+    type: 'SETPOST',
+    index: index,
+    value: value
+  }
+);
+

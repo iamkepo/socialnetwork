@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, StyleSheet, Dimensions, ScrollView, BackHandler, TouchableOpacity, RefreshControl, StatusBar, ActivityIndicator, Text, View } from 'react-native';
+import { Animated, StyleSheet, Dimensions, ScrollView, BackHandler, TouchableOpacity, RefreshControl, StatusBar, ActivityIndicator, Text, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Entypo, EvilIcons, AntDesign } from 'react-native-vector-icons';
 import PagerView from 'react-native-pager-view';
@@ -83,6 +83,13 @@ class HomeScreen extends React.Component {
     wait(2000).then(() => this.setState({refreshing: false}));
   };
 
+  showAlert(msg){
+    Alert.alert('Alert Title', msg, [
+      { text: 'Voir quand meme', onPress: () => this.navigation.navigate("DiscussionScreen")},
+      { text: 'OK', onPress: () => false },
+    ])
+
+  }
   render(){
     return (
       <SafeAreaView style={styles.container}>
@@ -91,7 +98,7 @@ class HomeScreen extends React.Component {
         <View style={styles.boxaction} >
 
           <TouchableOpacity
-            onPress={()=> this.navigation.navigate("ProfileScreen", { user_id: this.props.data.user.id })}
+            onPress={()=> this.navigation.navigate("ProfileScreen", { user: this.props.data.user })}
             style={styles.profil}
           >
             <AntDesign name="user" size={30} color="#FFF"/>
@@ -102,7 +109,8 @@ class HomeScreen extends React.Component {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={()=> this.navigation.navigate("DiscussionScreen")}
+            // onPress={()=> this.navigation.navigate("DiscussionScreen")}
+            onPress={()=> this.showAlert('Cette page est encore encours de developpement')}
           >
             <EvilIcons name="comment" size={40} color="#FFF"/>
           </TouchableOpacity>
@@ -133,12 +141,12 @@ class HomeScreen extends React.Component {
                 this.props.data.posts.map((post, i)=>(
                   <PostViewComponent key={i}
                     repost={()=>this.navigation.navigate('UploadScreen', { post: post })}
-                    gotouser={()=> this.navigation.navigate("ProfileScreen", { user_id: post.user_id })}
-                    gotocomment={()=> this.navigation.navigate("MessageScreen", { user_id: post.user_id })}
+                    gotouser={()=> this.navigation.navigate("ProfileScreen", { user: post.user })}
+                    gotocomment={()=> this.navigation.navigate("CommentScreen", { post: post })}
                     post={post}
                     i={i}
                     onScreen={this.state.i}
-                    user={this.props.data.user}
+                    onRefresh={()=>this.onRefresh()}
                   />
                 ))
               }
@@ -214,7 +222,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F00",
     borderRadius: 50,
     position: "absolute",
-    bottom: 30,
+    bottom: 10,
     zIndex: 5,
     shadowColor: '#000',
     shadowRadius: 5,

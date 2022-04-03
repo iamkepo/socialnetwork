@@ -3,11 +3,12 @@ import { combineReducers } from 'redux';
 import { session } from "../utils/session";
 
 const INITIAL_STATE = {
-  user: {
-    id: "",
-    solde: 0.00000567001
+  user: {},
+  etat: {
+    bgcolor: "#000",
+    textcolor: "#FFF",
+    theme: "#F00"
   },
-  etat: {},
   posts: []
 };
 
@@ -21,7 +22,7 @@ function monReducer (state = INITIAL_STATE, action) {
 
       nextState = {
           ...state,
-          myState: state.etat
+          etat: state.etat
       }
     return nextState;
 
@@ -44,7 +45,18 @@ function monReducer (state = INITIAL_STATE, action) {
 
       nextState = {
           ...state,
-          myState: state.posts
+          posts: state.posts
+      }
+
+    return nextState
+
+    case 'SETPOST':
+
+      state.posts[action.index] = action.value;
+
+      nextState = {
+          ...state,
+          posts: state.posts
       }
 
     return nextState

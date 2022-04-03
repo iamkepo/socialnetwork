@@ -1,7 +1,7 @@
 /** Importation globale : */
 import React from 'react';
-import { View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet } from 'react-native';
-import { Entypo, Ionicons } from 'react-native-vector-icons';
+import { View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
+import { Entypo, Ionicons, AntDesign } from 'react-native-vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 
@@ -10,7 +10,7 @@ import { bindActionCreators } from 'redux';
 import { setStateAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
-import { upload } from "../utils/sender";
+import { post, repost, setpost } from "../utils/sender";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
@@ -34,6 +34,7 @@ class UploadScreen extends React.Component {
       description: "",
       step: 0,
       uri: false,
+      loader: false
     }
     this.navigation = this.props.navigation;
     this.route = this.props.route;
@@ -62,7 +63,7 @@ class UploadScreen extends React.Component {
 
 
   componentDidMount(){
-
+//console.log(this.props.data.user);
     if (this.route.params.post != undefined) {
       this.setState({
         file: this.route.params.post,
@@ -101,9 +102,37 @@ class UploadScreen extends React.Component {
       this.navigation.goBack()
     }
   }
+  postter(){
+    this.setState({loader: true});
+    var data = {
+      file: this.state.file,
+      user: this.props.data.user,
+      date: Date.now(),
+      description: this.state.description,
+    };
+    if (this.state.file.uri[0] != "h") {
+      post(data).then( (response)=> {
+        // console.log(response.data);
+        this.navigation.reset({ index: 0, routes: [{ name: 'MainNavigator' }]});
+      })
+      .catch( (error)=> {
+        console.log("post: "+error);
+      });
+    } else {
+      repost(data).then( (response)=> {
+        //console.log(response.data);
+        setpost({ post_id: this.route.params.post._id, option: "share", value: this.props.data.user._id});
+        this.navigation.reset({ index: 0, routes: [{ name: 'MainNavigator' }]});
+      })
+      .catch( (error)=> {
+        console.log("repost: "+error);
+      });
+    }
+
+  }
 	render() {
 		return (
-			<View style={{ width: "100%", height: "100%", backgroundColor: "#000", alignItems: "center",  justifyContent: "flex-start" }}>
+			<View style={{ width: "100%", height: "100%", backgroundColor: "#000", alignItems: "center",  justifyContent: "flex-start", position: "relative" }}>
         <TouchableOpacity
           onPress={()=> this.back()}
           style={{ width: "95%", height: 50, alignItems: "center", flexDirection: "row", justifyContent: "space-between"}}
@@ -158,11 +187,18 @@ class UploadScreen extends React.Component {
                   :
                   <>
                     <TouchableOpacity onPress={()=> this.setState({file: { ...this.state.file, type: "image"}})} style={styles.newpost}>
-                      <Text style={styles.text}> Photo </Text>
+                      <AntDesign name="picture" size={30} color="#FFF"/>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Videos)} style={styles.newpost}>
-                      <Text style={styles.text}> video </Text>
+                      <Entypo name="video" size={30} color="#FFF"/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=> alert("Cette fonctionnalité n'est pas encore disponible")} style={styles.newpost}>
+                      <Entypo name="camera" size={30} color="#FFF"/>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={()=> alert("Cette fonctionnalité n'est pas encore disponible")} style={styles.newpost}>
+                      <Entypo name="video-camera" size={30} color="#FFF"/>
                     </TouchableOpacity>
                   </>
                 }
@@ -204,24 +240,18 @@ class UploadScreen extends React.Component {
                 color: "#FFF",
                 padding: 10
               }}
-              onChangeText={()=>this.setState({description})}
+              onChangeText={(text)=> this.setState({description: text})}
               value={this.state.description}
               multiline={true}
               autoFocus={true}
               textAlignVertical="top"
-              ch
+              keyboardType="default"
+              placeholder="Ecrivez votre legende ici ..."
+              placeholderTextColor={"#FFF"}
             />
 
             <TouchableOpacity
-              onPress={()=> {
-                upload({ file: this.state.file, user: this.props.data.user, description: this.state.description }).then( (response)=> {
-                  //console.log(response.data);
-                  this.navigation.reset({ index: 0, routes: [{ name: 'MainNavigator' }]});
-                })
-                .catch( (error)=> {
-                  console.log("upload: "+error);
-                });
-              }}
+              onPress={()=> this.postter()}
               style={{
                 backgroundColor: "#BB0000",
                 width: "95%",
@@ -241,7 +271,11 @@ class UploadScreen extends React.Component {
           </View>
 
         }
-
+        {this.state.loader &&
+          <View style={{width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", alignItems: "center",  justifyContent: "center", position: "absolute", zIndex: 5, top: 0, bottom: 0, left: 0, right: 0 }}>
+            <ActivityIndicator size="large" color="F00" />
+          </View>
+        }
 			</View>
 		);
 
@@ -258,7 +292,7 @@ const styles = StyleSheet.create({
   },
   boxaction: {
     width: "95%",
-    height: "20%",
+    height: "45%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
@@ -282,8 +316,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   mini: {
-    width: "20%",
-    height: "45%",
+    width: "25%",
+    height: "25%",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
@@ -303,13 +337,13 @@ const styles = StyleSheet.create({
   },
   newpost: {
     width: "45%",
-    height: "100%",
+    height: "45%",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#FFF",
-    marginVertical: "5%",
+    marginBottom: "5%",
     overflow: "hidden"
   }
 });

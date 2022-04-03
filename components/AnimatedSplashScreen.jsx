@@ -24,7 +24,7 @@ function AnimatedSplashScreen(props) {
   );
 
   React.useEffect(() => {
-    props.userAction("id", "user"+ Date.now())
+    props.userAction("_id", "user"+ Date.now())
     if (isAppReady) {
       Animated.timing(animation, {
         toValue: 0,
