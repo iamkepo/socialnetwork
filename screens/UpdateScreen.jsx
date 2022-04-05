@@ -49,7 +49,7 @@ class UpdateScreen extends React.Component {
     );
   }
 	_viewMoreOnMaps() {
-    const browser_url ="https://iamkepo.github.io/cashapp";
+    const browser_url ="https://buzznobody.herokuapp.com/";
     return Linking.openURL(browser_url);
 	}
 

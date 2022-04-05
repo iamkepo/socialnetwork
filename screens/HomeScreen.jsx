@@ -54,16 +54,20 @@ class HomeScreen extends React.Component {
   }
 
   async componentDidMount(){
-    checkversion().then((response)=>{
-      //console.log(response.data.response);
-      if (response.data.response == false) {
-        this.navigation.navigate("UpdateScreen");
-      }else{
-        this.onRefresh();
-      }
-    }).catch((error)=>{
-      console.log(error);
-    })
+    if (this.props.data.user._id == undefined) {
+      this.navigation.navigate("StarterScreen");
+    } else {
+      checkversion().then((response)=>{
+        //console.log(response.data.response);
+        if (response.data.response == false) {
+          this.navigation.navigate("UpdateScreen");
+        }else{
+          this.onRefresh();
+        }
+      }).catch((error)=>{
+        console.log(error);
+      })
+    }
 
     this.backHandler = BackHandler.addEventListener(
       "hardwareBackPress",

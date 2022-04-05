@@ -6,6 +6,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { userAction } from '../store/ActivityActions';
 
+import { getsession } from "../utils/session";
+
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
     userAction
@@ -24,7 +26,12 @@ function AnimatedSplashScreen(props) {
   );
 
   React.useEffect(() => {
-    props.userAction("_id", "user"+ Date.now())
+    var user = getsession("user").then(()=>{
+      if (user != null && user != undefined) {
+        props.userAction("init", user)
+      }
+    })
+
     if (isAppReady) {
       Animated.timing(animation, {
         toValue: 0,
@@ -55,7 +62,7 @@ function AnimatedSplashScreen(props) {
           style={[
             StyleSheet.absoluteFill,
             {
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "#000",
               opacity: animation,
             },
           ]}

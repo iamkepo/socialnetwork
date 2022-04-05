@@ -16,6 +16,7 @@ import MessageScreen from '../screens/MessageScreen';
 import CommentScreen from '../screens/CommentScreen';
 import SinglePostScreen from '../screens/SinglePostScreen';
 import CashScreen from '../screens/CashScreen';
+import StarterScreen from '../screens/StarterScreen';
 
 
 const Stack = createStackNavigator();
@@ -101,6 +102,13 @@ class HomeNavigator extends React.Component {
         <Stack.Screen
           name="CashScreen"
           component={CashScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="StarterScreen"
+          component={StarterScreen}
           route={this.route}
           navigation={this.navigation}
           options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}

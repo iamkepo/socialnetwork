@@ -2,7 +2,7 @@ import axios from "axios";
 import * as FileSystem from 'expo-file-system';
 
 const baseURL = "http://192.168.173.26:3000";
-// const baseURL = "https://api-socialnet.herokuapp.com";
+// const baseURL = "https://buzznobody.herokuapp.com";
 export function checkversion() {
   return axios({
     method: 'get',
@@ -102,5 +102,20 @@ export function getcomments(param) {
   return axios({
     method: 'get',
     url: baseURL+"/getcomments/"+param
+  })
+}
+
+export function getuser(param) {
+  return axios({
+    method: 'get',
+    url: baseURL+"/getuser/"+param
+  })
+}
+
+export function setuser(data) {
+  return axios({
+    method: 'user',
+    url: baseURL+"/setuser",
+    data: data
   })
 }

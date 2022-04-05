@@ -28,9 +28,12 @@ function monReducer (state = INITIAL_STATE, action) {
 
     case 'USER':
 
-      state.user[action.index] = action.value;
-
-      //session(state.user);
+      if (action.index == "init") {
+        state.user = action.value;
+      } else {
+        state.user[action.index] = action.value;
+        session("user", state.user);
+      }
 
       nextState = {
           ...state,
