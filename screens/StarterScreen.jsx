@@ -1,17 +1,18 @@
 /** Importation globale : */
 import React from 'react';
 import { View, Dimensions, Text, TouchableOpacity, StyleSheet, BackHandler} from 'react-native';
-import { Entypo } from 'react-native-vector-icons';
+import { Entypo, AntDesign } from 'react-native-vector-icons';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { setStateAction } from '../store/ActivityActions';
+import { userAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
+import { setuser, getuser } from "../utils/sender";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
-    setStateAction
+    userAction
   }, dispatch)
 );
 
@@ -26,7 +27,9 @@ class StarterScreen extends React.Component {
 
 	constructor(props) {
 		super(props);
-
+    this.state = {
+      step: 0
+    };
     this.navigation = this.props.navigation;
     this.route = this.props.route;
   }
@@ -49,36 +52,70 @@ class StarterScreen extends React.Component {
     );
   }
 	register() {
-
+    var data = {
+      option: "register"
+    }
+    setuser(data).then((response1)=>{
+      //console.log(response1.data.insertedId);
+      if (response1.data.insertedId) {
+        getuser(response1.data.insertedId).then((response2)=>{
+          //console.log(response2.data);
+          this.props.userAction("init", response2.data);
+        }).catch((error)=>{
+          console.log(error);
+        })
+      }
+    }).catch((error)=>{
+      console.log("register: "+error);
+    })
 	}
 
 	render() {
 		return (
 			<View style={styles.container}>
+        {
+          this.props.data.user._id == undefined ?
+          <View  style={styles.sous}>
 
-        <View  style={{ width: "100%", height: "40%", alignItems: "center",  justifyContent: "space-evenly" }}>
+            <Entypo name="emoji-sad" size={30} color="#FFF" />
 
-          <Entypo name="emoji-sad" size={30} color="#FFF" style={{ marginLeft: 0, marginRight: -5, }}/>
+            <Text style={styles.title}>
+              Vous n'avez pas de compte connecter sur ce téléphone
+            </Text>
 
-          <Text style={{width: "60%",textAlign: "center",fontSize: normalize(18), fontWeight: "bold", color: "#FFF" }}>
-            Vous n'avez pas de compte connecter sur ce téléphone
-          </Text>
+            <Text style={styles.text}>
+              {"Cliquer pour générer un nouveau compte"}
+              {"\n \n (cette version Beta ne dispose pas encore de l'option récupération de compte)"}
+            </Text>
 
-          <Text style={{ width: "85%", textAlign: "center", fontSize: normalize(15), color: "#FFF" }}>
-            {"Cliquer pour générer un nouveau compte"}
-            {"\n (cette version Beta ne dispose pas encore de l'option récupération de compte)"}
-          </Text>
+            <TouchableOpacity onPress={()=> this.register() } style={styles.btn}>
+              <Text style={{ color: "#FFF", fontSize: normalize(14), textAlign: "center" }}> Générer </Text>
+            </TouchableOpacity>
 
-					<TouchableOpacity
-            onPress={()=> this.register() }
-            style={styles.btn}
-          >
+          </View>
+          :
+          <View  style={styles.sous}>
 
-            <Text style={{ color: "#FFF", fontSize: normalize(14), textAlign: "center" }}> Générer </Text>
+            <View style={styles.profilicon}>
+              <AntDesign name="user" size={normalize(50)} color="#FFF"/>
+            </View>
 
-          </TouchableOpacity>
+            <Text style={styles.title}>
+              Vous ètes enrégistré maintenant
+            </Text>
 
-				</View>
+            <Text style={styles.profiltext}>
+              {"psoeudo: "+this.props.data.user.psoeudo}
+              {"\n\nbio: "+ this.props.data.user.bio}
+              {"\n\nsolde: "+ this.props.data.user.solde}
+            </Text>
+
+            <TouchableOpacity onPress={()=> this.navigation.reset({ index: 0, routes: [{ name: 'MainNavigator' }]}) } style={styles.btn}>
+              <Text style={{ color: "#FFF", fontSize: normalize(14), textAlign: "center" }}> Commencer </Text>
+            </TouchableOpacity>
+
+          </View>
+        }
 
 			</View>
 		);
@@ -95,6 +132,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
+  sous: {
+    width: "100%",
+    height: "50%",
+    alignItems: "center",
+    justifyContent: "space-evenly"
+  },
+  title:{
+    width: "70%",
+    textAlign: "center",
+    fontSize: normalize(18),
+    fontWeight: "bold",
+    color: "#FFF"
+  },
+  text: {
+    width: "85%",
+    textAlign: "center",
+    fontSize: normalize(15),
+    color: "#FFF"
+  },
   btn: {
     backgroundColor: "#BB0000",
     width: "50%",
@@ -110,6 +166,20 @@ const styles = StyleSheet.create({
       height: 0,
     },
     elevation: 0,
-  }
+  },
+  profilicon: {
+    width: "35%",
+    height: "29%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#F00",
+    borderRadius: 70,
+  },
+  profiltext: {
+    textAlign: "left",
+    fontSize: normalize(15),
+    color: "#FFF"
+  },
 });
 export default connect(mapStateToProps, mapDispatchToProps)(StarterScreen);

@@ -28,7 +28,7 @@ function AnimatedSplashScreen(props) {
   React.useEffect(() => {
     var user = getsession("user").then(()=>{
       if (user != null && user != undefined) {
-        props.userAction("init", user)
+        props.userAction("search", user)
       }
     })
 

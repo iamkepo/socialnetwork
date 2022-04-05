@@ -114,7 +114,7 @@ export function getuser(param) {
 
 export function setuser(data) {
   return axios({
-    method: 'user',
+    method: 'post',
     url: baseURL+"/setuser",
     data: data
   })
