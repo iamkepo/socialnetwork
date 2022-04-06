@@ -6,14 +6,14 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { setStateAction } from '../store/ActivityActions';
+import { userAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
-import { upload } from "../utils/sender";
+import { getuser, getposts } from "../utils/sender";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
-    setStateAction
+    userAction
   }, dispatch)
 );
 
@@ -34,6 +34,8 @@ class ProfileScreen extends React.Component {
 		super(props);
     this.state= {
       refreshing: false,
+      user: {},
+      posts: []
     }
     this.navigation = this.props.navigation;
     this.route = this.props.route;
@@ -61,6 +63,20 @@ class ProfileScreen extends React.Component {
   onRefresh(){
     this.setState({refreshing: true});
 
+    getuser(this.route.params.user._id).then((response)=>{
+      this.setState({user: response.data});
+      if (this.route.params.user._id == this.props.data.user._id) {
+        this.props.userAction(response.data);
+      }
+    }).catch((error)=>{
+      console.log("init: "+error);
+    })
+
+    getposts(this.route.params.user._id).then((response)=>{
+      this.setState({posts: response.data});
+    }).catch((error)=>{
+      console.log(error);
+    })
     wait(2000).then(() => this.setState({refreshing: false}));
   };
   async pickImage(type, y=4) {
@@ -91,7 +107,7 @@ class ProfileScreen extends React.Component {
           </TouchableOpacity>
 
           <Text style={styles.title}>
-            {this.route.params.user._id == this.props.data.user._id ? "Profile" : this.route.params.user._id}
+            {this.state.user._id == this.props.data.user._id ? "Profile" : this.state.user.psoeudo}
           </Text>
 
         </View>
@@ -116,9 +132,6 @@ class ProfileScreen extends React.Component {
                   <Image source={{uri: this.props.data.user.photo}} resizeMode="cover" style={{width: "100%", height: "100%"}} />
                 }
               </TouchableOpacity>
-              <Text style={styles.psoeudo}>
-                {this.route.params.user.psoeudo != "" ? this.route.params.user.psoeudo : this.route.params.user._id}
-              </Text>
               <View style={styles.boxfollow}>
                 <TouchableOpacity style={styles.btnfollow} onPress={()=> false}>
                   <Text style={styles.textfollow}> Following </Text>
@@ -130,6 +143,10 @@ class ProfileScreen extends React.Component {
                 </TouchableOpacity>
               </View>
             </View>
+              <Text style={styles.bio}>
+                Bio
+                {"\n"+this.state.user.bio}
+              </Text>
 
           </ScrollView>
 
@@ -175,35 +192,31 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   profilbox: {
-    width: screen.width,
-    height: screen.height/4,
-    alignItems: "center",
+    width: "95%",
+    height: screen.height/8,
+    flexDirection: "row",
+    alignItems: "flex-start",
     justifyContent: "space-evenly",
   },
   profil: {
-    width: "30%",
-    height: "50%",
+    width: "32%",
+    height: "100%",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
     borderColor: "#F00",
     borderRadius: 70,
   },
-  psoeudo: {
-    fontSize: normalize(18),
-    fontWeight: "bold",
-    color: "#FFF"
-  },
   boxfollow: {
-    width: "100%",
-    height: "30%",
+    width: "65%",
+    height: "60%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-evenly",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    // backgroundColor: "rgba(255, 255, 255, 0.2)",
   },
   btnfollow: {
-    width: "45%",
+    width: "50%",
     height: "30%",
     alignItems: "center",
     justifyContent: "center",
@@ -216,6 +229,14 @@ const styles = StyleSheet.create({
   numberfollow: {
     fontSize: normalize(15),
     color: "#FFF"
+  },
+  bio: {
+    width: "90%",
+    fontSize: normalize(18),
+    color: "#FFF",
+    marginVertical: "5%",
+    borderBottomWidth: 1,
+    borderColor: "#FFF",
   },
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ProfileScreen);

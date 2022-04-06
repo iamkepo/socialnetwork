@@ -87,13 +87,6 @@ class HomeScreen extends React.Component {
     wait(2000).then(() => this.setState({refreshing: false}));
   };
 
-  showAlert(msg){
-    Alert.alert('Alert Title', msg, [
-      { text: 'Voir quand meme', onPress: () => this.navigation.navigate("DiscussionScreen")},
-      { text: 'OK', onPress: () => false },
-    ])
-
-  }
   render(){
     return (
       <SafeAreaView style={styles.container}>
@@ -113,8 +106,7 @@ class HomeScreen extends React.Component {
           </TouchableOpacity>
 
           <TouchableOpacity
-            // onPress={()=> this.navigation.navigate("DiscussionScreen")}
-            onPress={()=> this.showAlert('Cette page est encore encours de developpement')}
+            onPress={()=> this.navigation.navigate("DiscussionScreen")}
           >
             <EvilIcons name="comment" size={40} color="#FFF"/>
           </TouchableOpacity>

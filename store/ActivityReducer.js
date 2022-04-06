@@ -1,7 +1,5 @@
 import { combineReducers } from 'redux';
 
-import { session } from "../utils/session";
-
 const INITIAL_STATE = {
   user: {},
   etat: {
@@ -28,15 +26,7 @@ function monReducer (state = INITIAL_STATE, action) {
 
     case 'USER':
 
-      if (action.index == "search") {
-        state.user = action.value;
-      } else if (action.index == "init"){
-        state.user = action.value;
-        session("user", state.user);
-      } else {
-        state.user[action.index] = action.value;
-        session("user", state.user);
-      }
+      state.user = action.payload;
 
       nextState = {
           ...state,

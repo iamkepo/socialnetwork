@@ -6,8 +6,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { userAction } from '../store/ActivityActions';
 
-import { getsession } from "../utils/session";
-
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
     userAction
@@ -26,11 +24,6 @@ function AnimatedSplashScreen(props) {
   );
 
   React.useEffect(() => {
-    var user = getsession("user").then(()=>{
-      if (user != null && user != undefined) {
-        props.userAction("search", user)
-      }
-    })
 
     if (isAppReady) {
       Animated.timing(animation, {

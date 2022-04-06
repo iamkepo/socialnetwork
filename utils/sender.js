@@ -29,7 +29,6 @@ export async function upload({file, user, date}) {
     httpMethod: 'POST',
     headers: {
       'Content-Type': 'multipart/form-data',
-      date : date,
       user_id : user._id,
       type : file.type
     },
@@ -41,24 +40,23 @@ export async function upload({file, user, date}) {
   })
 }
 
-export async function post({file, user, date, description}) {
-  await upload({file, user, date})
+export async function post({file, user, description}) {
+  await upload({file, user})
   .then( (response)=> {
     //console.log(response.body);
     file.uri = JSON.parse(response.body).uri;
-    return repost({file, user, date, description})
+    return repost({file, user, description})
   })
   .catch( (error)=> {
     console.log("upload: "+error);
   });
 }
 
-export function repost({file, user, date, description}) {
+export function repost({file, user, description}) {
   return axios({
     method: 'post',
     url: baseURL+"/repost",
     data: {
-      date : date,
       source_id : file.source_id ? file.source_id : user._id,
       user : { _id: user._id, photo: user.photo, psoeudo: user.psoeudo },
       description : description,
@@ -102,6 +100,13 @@ export function getcomments(param) {
   return axios({
     method: 'get',
     url: baseURL+"/getcomments/"+param
+  })
+}
+
+export function getusers() {
+  return axios({
+    method: 'get',
+    url: baseURL+"/getusers"
   })
 }
 

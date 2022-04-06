@@ -9,6 +9,7 @@ import { userAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
 import { setuser, getuser } from "../utils/sender";
+import { getData, storeData } from "../utils/session";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
@@ -43,8 +44,23 @@ class StarterScreen extends React.Component {
    this.backHandler.remove();
   }
 
+  init(){
+    getData().then((user)=>{
+      if (user != null && user != undefined) {
+        console.log(user);
+        getuser(user).then((response)=>{
+          //console.log(response.data);
+          this.props.userAction(response.data);
+          this.navigation.reset({ index: 0, routes: [{ name: 'MainNavigator' }]})
+        }).catch((error)=>{
+          console.log("init: "+error);
+        })
+      }
+    }).catch((e)=>console.log(e))
+  }
 
   async componentDidMount(){
+    this.init();
 
     this.backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -58,11 +74,12 @@ class StarterScreen extends React.Component {
     setuser(data).then((response1)=>{
       //console.log(response1.data.insertedId);
       if (response1.data.insertedId) {
+        storeData(response1.data.insertedId)
         getuser(response1.data.insertedId).then((response2)=>{
           //console.log(response2.data);
-          this.props.userAction("init", response2.data);
+          this.props.userAction(response2.data);
         }).catch((error)=>{
-          console.log(error);
+          console.log("init: "+error);
         })
       }
     }).catch((error)=>{

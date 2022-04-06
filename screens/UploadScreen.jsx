@@ -107,7 +107,6 @@ class UploadScreen extends React.Component {
     var data = {
       file: this.state.file,
       user: this.props.data.user,
-      date: Date.now(),
       description: this.state.description,
     };
     if (this.state.file.uri[0] != "h") {

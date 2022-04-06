@@ -168,7 +168,7 @@ function PostViewComponent(props) {
         }
 
         {
-          (props.data.user.following.find(item => item == props.post.user._id)) == undefined ?
+          (props.data.user.following.find(item => item  == props.post.user._id)) == undefined && props.post.user._id != props.data.user._id ?
           <TouchableOpacity style={styles.number} onPress={()=> false}>
             <AntDesign name="pluscircle" size={normalize(20)} color="#F00"/>
           </TouchableOpacity>
