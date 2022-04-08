@@ -1,6 +1,6 @@
 /** Importation globale : */
 import React from 'react';
-import { View, Dimensions, Text, TouchableOpacity, StyleSheet, BackHandler} from 'react-native';
+import { View, Dimensions, Text, TouchableOpacity, StyleSheet, BackHandler, ActivityIndicator} from 'react-native';
 import { Entypo, AntDesign } from 'react-native-vector-icons';
 
 import { connect } from 'react-redux';
@@ -29,7 +29,8 @@ class StarterScreen extends React.Component {
 	constructor(props) {
 		super(props);
     this.state = {
-      step: 0
+      step: 0,
+      loader: true
     };
     this.navigation = this.props.navigation;
     this.route = this.props.route;
@@ -47,7 +48,7 @@ class StarterScreen extends React.Component {
   init(){
     getData().then((user)=>{
       if (user != null && user != undefined) {
-        console.log(user);
+        //console.log(user);
         getuser(user).then((response)=>{
           //console.log(response.data);
           this.props.userAction(response.data);
@@ -55,6 +56,8 @@ class StarterScreen extends React.Component {
         }).catch((error)=>{
           console.log("init: "+error);
         })
+      }else{
+        this.setState({loader: false})
       }
     }).catch((e)=>console.log(e))
   }
@@ -90,8 +93,10 @@ class StarterScreen extends React.Component {
 	render() {
 		return (
 			<View style={styles.container}>
+
+        {this.state.loader && <ActivityIndicator size="large" color="F00" />}
         {
-          this.props.data.user._id == undefined ?
+          this.props.data.user._id == undefined && !this.state.loader ?
           <View  style={styles.sous}>
 
             <Entypo name="emoji-sad" size={30} color="#FFF" />

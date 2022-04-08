@@ -98,12 +98,12 @@ class DiscussionScreen extends React.Component {
             users.map((user, i)=>(
               <TouchableOpacity key={i}
                 style={styles.discussion}
-                onPress={()=> this.navigation.navigate("MessageScreen", { user_id: i })}
+                onPress={()=> this.navigation.navigate("MessageScreen", { user: user })}
               >
                 <AntDesign name="user" size={30} color="#FFF"/>
 
                 <View style={styles.textbox}>
-                  <Text style={styles.name}> {user.name} {i} </Text>
+                  <Text style={styles.name}> {user.psoeudo} {i} </Text>
                   <Text style={styles.lastmessage}> {user.lastmessage} </Text>
                 </View>
               </TouchableOpacity>
@@ -120,19 +120,19 @@ class DiscussionScreen extends React.Component {
 }
 
 const users = [
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" },
-  { name: "user", lastmessage: "comment vas-tu ?" }
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
+  { psoeudo: "user", lastmessage: "comment vas-tu ?" }
 ];
 
 const styles = StyleSheet.create({

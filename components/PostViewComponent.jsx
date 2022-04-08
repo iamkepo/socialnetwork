@@ -7,15 +7,16 @@ import { Video, AVPlaybackStatus } from 'expo-av';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { setStateAction, setPostAction } from '../store/ActivityActions';
+import { setStateAction, setPostAction, userAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
-import { setpost, getpost } from "../utils/sender";
+import { setpost, getpost, setuser, getuser } from "../utils/sender";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
     setStateAction,
-    setPostAction
+    setPostAction,
+    userAction
   }, dispatch)
 );
 
@@ -51,6 +52,18 @@ function PostViewComponent(props) {
     generateThumbnail()
   }, []);
 
+  const suivre = (him)=>{
+    var data = {
+      me: props.data.user._id,
+      him: him,
+      option: "followingpush"
+    }
+    setuser(data).then(()=>{
+      getuser(props.data.user._id).then((response)=>{
+        props.userAction(response.data);
+      })
+    })
+  }
   return (
     <View style={styles.posts}>
 
@@ -169,7 +182,7 @@ function PostViewComponent(props) {
 
         {
           (props.data.user.following.find(item => item  == props.post.user._id)) == undefined && props.post.user._id != props.data.user._id ?
-          <TouchableOpacity style={styles.number} onPress={()=> false}>
+          <TouchableOpacity style={styles.number} onPress={()=> suivre(props.post.user._id)}>
             <AntDesign name="pluscircle" size={normalize(20)} color="#F00"/>
           </TouchableOpacity>
           : false
@@ -237,17 +250,17 @@ const styles = StyleSheet.create({
   },
   boxaction: {
     width: 50,
-    height: "60%",
+    height: "50%",
     borderRadius: 20,
     display: "flex",
     flexDirection: "column",
     alignItems: 'center',
     justifyContent: "space-evenly",
     position: "absolute",
-    bottom: 50,
+    bottom: 0,
     right: 0,
     zIndex: 3,
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
   },
   number: {
     fontSize: normalize(15),

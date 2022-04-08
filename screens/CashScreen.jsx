@@ -73,7 +73,7 @@ class CashScreen extends React.Component {
     var data = {
       me: this.props.data.user._id,
       him: him,
-      option: (this.props.data.user.following.find(item => item == user._id)) == undefined ? "followingpush" : "followingremove"
+      option: (this.props.data.user.following.find(item => item == him)) == undefined ? "followingpush" : "followingremove"
     }
     setuser(data).then(()=>{
       getuser(this.props.data.user._id).then((response)=>{
@@ -132,19 +132,15 @@ class CashScreen extends React.Component {
                     <Text style={styles.comment}> {user.solde} </Text>
                   </View>
 
-                  {
-                    (this.props.data.user.following.find(item => item == user._id)) == undefined ?
+                  {(this.props.data.user.following.find(item => item == user._id)) == undefined && user._id != this.props.data.user._id &&
                     <TouchableOpacity style={styles.btnfollow} onPress={()=> this.suivre(user._id)}>
                       <Text style={styles.btntext}> suivre {(this.props.data.user.follower.find(item => item == user._id)) != undefined ? "en retour" : "" }</Text>
-                    </TouchableOpacity>
-                    :
-                    (this.props.data.user.following.find(item => item == user._id)) == undefined && user._id != this.props.data.user._id ?
+                    </TouchableOpacity>}
+                  {(this.props.data.user.following.find(item => item == user._id)) != undefined &&
                     <TouchableOpacity style={styles.btnretier} onPress={()=> this.suivre(user._id)}>
                       <Text style={styles.btntext}> retirer </Text>
-                    </TouchableOpacity>
-                    :
-                    <Text > moi meme </Text>
-                  }
+                    </TouchableOpacity>}
+                  {user._id == this.props.data.user._id && <Text > moi meme </Text>}
                 </View>
               ))
             }

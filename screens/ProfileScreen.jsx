@@ -9,7 +9,7 @@ import { bindActionCreators } from 'redux';
 import { userAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
-import { getuser, getposts } from "../utils/sender";
+import { getuser, getposts, setuser } from "../utils/sender";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
@@ -96,6 +96,18 @@ class ProfileScreen extends React.Component {
   back() {
     this.navigation.goBack()
   }
+  suivre(him){
+    var data = {
+      me: this.props.data.user._id,
+      him: him,
+      option: (this.props.data.user.following.find(item => item == him)) == undefined ? "followingpush" : "followingremove"
+    }
+    setuser(data).then(()=>{
+      getuser(this.props.data.user._id).then((response)=>{
+        this.props.userAction(response.data);
+      })
+    })
+  }
 	render() {
 		return (
 			<View style={styles.container}>
@@ -111,7 +123,7 @@ class ProfileScreen extends React.Component {
           </Text>
 
         </View>
-
+        {this.state.user._id &&
         <View style={styles.sous}>
 
           <ScrollView
@@ -124,6 +136,7 @@ class ProfileScreen extends React.Component {
             }
           >
             <View style={styles.profilbox}>
+
               <TouchableOpacity style={styles.profil} onPress={()=> false}>
                 {
                   this.props.data.user.photo == "" ?
@@ -132,25 +145,44 @@ class ProfileScreen extends React.Component {
                   <Image source={{uri: this.props.data.user.photo}} resizeMode="cover" style={{width: "100%", height: "100%"}} />
                 }
               </TouchableOpacity>
-              <View style={styles.boxfollow}>
-                <TouchableOpacity style={styles.btnfollow} onPress={()=> false}>
-                  <Text style={styles.textfollow}> Following </Text>
-                  <Text style={styles.numberfollow}> 1880 </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnfollow} onPress={()=> false}>
-                  <Text style={styles.textfollow}> Follower </Text>
-                  <Text style={styles.numberfollow}> 10K </Text>
-                </TouchableOpacity>
+              <View style={styles.infos}>
+                <View style={styles.boxfollow}>
+                  <TouchableOpacity style={styles.btnfollow} onPress={()=> false}>
+                    <Text style={styles.textfollow}> Following </Text>
+                    <Text style={styles.numberfollow}> {this.state.user.following.length - this.state.user.following.filter(item=> item == null).length} </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.btnfollow} onPress={()=> false}>
+                    <Text style={styles.textfollow}> Follower </Text>
+                    <Text style={styles.numberfollow}> {this.state.user.follower.length - this.state.user.follower.filter(item=> item == null).length} </Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.solde}>Solde: {this.state.user.solde}</Text>
               </View>
             </View>
-              <Text style={styles.bio}>
-                Bio
-                {"\n"+this.state.user.bio}
-              </Text>
 
+            <Text style={styles.bio}>
+              Bio
+              {"\n"+this.state.user.bio}
+            </Text>
+
+            <View style={styles.boxbtn}>
+              {this.state.user._id != this.props.data.user._id &&
+                <TouchableOpacity style={styles.btnsuivre} onPress={()=> this.navigation.navigate("MessageScreen", { user: this.state.user })}>
+                  <Text style={styles.btntext}> message </Text>
+                </TouchableOpacity>}
+              {(this.props.data.user.following.find(item => item == this.state.user._id)) == undefined && this.state.user._id != this.props.data.user._id &&
+                <TouchableOpacity style={styles.btnsuivre} onPress={()=> this.suivre(this.state.user._id)}>
+                  <Text style={styles.btntext}> suivre {(this.props.data.user.follower.find(item => item == this.state.user._id)) != undefined ? "en retour" : "" }</Text>
+                </TouchableOpacity>}
+              {(this.props.data.user.following.find(item => item == this.state.user._id)) != undefined &&
+                <TouchableOpacity style={styles.btnretier} onPress={()=> this.suivre(this.state.user._id)}>
+                  <Text style={styles.btntext}> retirer </Text>
+                </TouchableOpacity>}
+            </View>
           </ScrollView>
 
-        </View>
+
+        </View>}
 
 			</View>
 		);
@@ -199,7 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
   },
   profil: {
-    width: "32%",
+    width: "31.5%",
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
@@ -207,9 +239,15 @@ const styles = StyleSheet.create({
     borderColor: "#F00",
     borderRadius: 70,
   },
-  boxfollow: {
+  infos: {
     width: "65%",
-    height: "60%",
+    minHeight: "100%",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  boxfollow: {
+    width: "100%",
+    height: "50%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-evenly",
@@ -217,9 +255,9 @@ const styles = StyleSheet.create({
   },
   btnfollow: {
     width: "50%",
-    height: "30%",
+    height: "100%",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
   },
   textfollow: {
     fontSize: normalize(18),
@@ -230,13 +268,46 @@ const styles = StyleSheet.create({
     fontSize: normalize(15),
     color: "#FFF"
   },
+  solde: {
+    fontSize: normalize(18),
+    color: "#FFF",
+  },
   bio: {
     width: "90%",
     fontSize: normalize(18),
     color: "#FFF",
     marginVertical: "5%",
-    borderBottomWidth: 1,
-    borderColor: "#FFF",
+    // borderBottomWidth: 1,
+    // borderColor: "#FFF",
+  },
+  boxbtn: {
+    width: "95%",
+    height: screen.height/14,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  btnsuivre: {
+    backgroundColor: "#BB0000",
+    width: "45%",
+    height: "90%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 50,
+  },
+  btnretier: {
+    width: "45%",
+    height: "90%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 50,
+    borderWidth: 0.5,
+    borderColor: "#F00",
+  },
+  btntext: {
+    fontSize: normalize(15),
+    color: "#FFF",
+    fontWeight: "bold",
   },
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ProfileScreen);

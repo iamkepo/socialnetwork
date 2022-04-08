@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as FileSystem from 'expo-file-system';
 
-const baseURL = "http://192.168.173.26:3000";
+const baseURL = "http://192.168.31.26:3000";
 // const baseURL = "https://buzznobody.herokuapp.com";
 export function checkversion() {
   return axios({
