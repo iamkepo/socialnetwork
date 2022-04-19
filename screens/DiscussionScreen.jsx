@@ -1,6 +1,6 @@
 /** Importation globale : */
 import React from 'react';
-import { View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { View, Dimensions, Text, TouchableOpacity, BackHandler, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { AntDesign, Ionicons } from 'react-native-vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -9,6 +9,7 @@ import { bindActionCreators } from 'redux';
 import { setStateAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
+import DiscussionComponent from '../components/DiscussionComponent';
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
@@ -32,6 +33,7 @@ class DiscussionScreen extends React.Component {
 		super(props);
     this.state= {
       refreshing: false,
+      discussions: []
     }
     this.navigation = this.props.navigation;
     this.route = this.props.route;
@@ -47,7 +49,7 @@ class DiscussionScreen extends React.Component {
   }
 
   componentDidMount(){
-
+    this.onRefresh();
     this.backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
       this.backAction
@@ -56,7 +58,7 @@ class DiscussionScreen extends React.Component {
 
   onRefresh(){
     this.setState({refreshing: true});
-
+    this.setState({discussions: list_discussions_test})
     wait(2000).then(() => this.setState({refreshing: false}));
   };
 
@@ -74,11 +76,11 @@ class DiscussionScreen extends React.Component {
           </TouchableOpacity>
 
           <Text style={styles.title}>
-            Discussion
+            Discussions
           </Text>
 
           <TouchableOpacity onPress={()=> false}>
-            <AntDesign name="search1" size={30} color="#FFF"/>
+            <AntDesign name="search1" size={30} color="#000"/>
           </TouchableOpacity>
 
         </View>
@@ -92,24 +94,18 @@ class DiscussionScreen extends React.Component {
             />
           }
         >
-          <View style={{height: 30}} />
-
+          <View style={{height: 10}} />
           {
-            users.map((user, i)=>(
-              <TouchableOpacity key={i}
-                style={styles.discussion}
-                onPress={()=> this.navigation.navigate("MessageScreen", { user: user })}
-              >
-                <AntDesign name="user" size={30} color="#FFF"/>
-
-                <View style={styles.textbox}>
-                  <Text style={styles.name}> {user.psoeudo} {i} </Text>
-                  <Text style={styles.lastmessage}> {user.lastmessage} </Text>
-                </View>
-              </TouchableOpacity>
+            this.state.discussions.map((discussion, i)=>(
+              <DiscussionComponent 
+                key={i} 
+                discussion={discussion} 
+                goto={()=> this.navigation.navigate("MessageScreen", { discussion: discussion })} 
+              />
             ))
           }
 
+          <View style={{height: 50}} /> 
         </ScrollView>
 
 			</View>
@@ -119,20 +115,133 @@ class DiscussionScreen extends React.Component {
 
 }
 
-const users = [
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" },
-  { psoeudo: "user", lastmessage: "comment vas-tu ?" }
+const list_discussions_test = [
+  { 
+    _id: "discussion_id",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: false,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
+  { 
+    _id: "discussion",
+    users: [
+      { user_id: "user1", psoeudo: "user1", photo: "" },
+      { user_id: "user2", psoeudo: "user2", photo: "" }
+    ], 
+    last:{
+      user_id: "user2",
+      message: "comment vas-tu ?",
+      vue: true,
+      date: Date()
+    },
+    type: "duo"
+  },
 ];
 
 const styles = StyleSheet.create({
@@ -159,38 +268,6 @@ const styles = StyleSheet.create({
   scrollView: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  discussion: {
-    width: screen.width-30,
-    height: screen.height/10,
-    display: "flex",
-    flexDirection: "row",
-    alignItems: 'center',
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#FFF",
-    borderRadius: 10,
-    marginTop: "5%",
-    paddingLeft: "5%"
-  },
-  textbox: {
-    width: "85%",
-    height: "100%",
-    alignItems: 'center',
-    justifyContent: "space-evenly",
-  },
-  name: {
-    width: "100%",
-    height: "30%",
-    fontSize: normalize(20),
-    fontWeight: "bold",
-    color: "#FFF"
-  },
-  lastmessage: {
-    width: "100%",
-    height: "50%",
-    fontSize: normalize(15),
-    color: "#FFF"
-  },
+  }
 });
 export default connect(mapStateToProps, mapDispatchToProps)(DiscussionScreen);

@@ -12,6 +12,7 @@ import { checkversion, getposts } from "../utils/sender";
 import { normalize } from "../utils/fonts";
 
 import PostViewComponent from "../components/PostViewComponent";
+import AddPostComponent from '../components/AddPostComponent';
 
 const AnimatedPager = Animated.createAnimatedComponent(PagerView);
 
@@ -37,7 +38,7 @@ class HomeScreen extends React.Component {
     super(props);
     this.state = {
       refreshing: false,
-      ready: false,
+      ready: true,
       i: 0
     };
     this.navigation = this.props.navigation;
@@ -52,8 +53,7 @@ class HomeScreen extends React.Component {
   componentWillUnmount() {
    this.backHandler.remove();
   }
-
-  async componentDidMount(){
+  async init(){
     if (this.props.data.user._id == undefined) {
       this.navigation.navigate("StarterScreen");
     } else {
@@ -68,6 +68,9 @@ class HomeScreen extends React.Component {
         console.log(error);
       })
     }
+  }
+  async componentDidMount(){
+    this.init();
 
     this.backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -98,19 +101,23 @@ class HomeScreen extends React.Component {
             onPress={()=> this.navigation.navigate("ProfileScreen", { user: this.props.data.user })}
             style={styles.profil}
           >
-            <AntDesign name="user" size={30} color="#FFF"/>
+            <AntDesign name="user" size={25} color="#FFF"/>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={()=>  this.navigation.navigate("CashScreen")}>
             <Text style={styles.text} > {this.props.data.user.solde} </Text>
           </TouchableOpacity>
+          
+          <View style={styles.groupicon} >
+            <TouchableOpacity onPress={()=> this.navigation.navigate("DiscussionScreen")}>
+              <EvilIcons name="comment" size={40} color="#FFF"/>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={()=> this.navigation.navigate("DiscussionScreen")}
-          >
-            <EvilIcons name="comment" size={40} color="#FFF"/>
-          </TouchableOpacity>
-
+            <TouchableOpacity onPress={()=> this.navigation.navigate("SearchScreen")}>
+              <AntDesign name="search1" size={30} color="#FFF"/>
+            </TouchableOpacity>
+          </View>
+          
         </View>
 
         {
@@ -141,7 +148,7 @@ class HomeScreen extends React.Component {
                     gotocomment={()=> this.navigation.navigate("CommentScreen", { post: post })}
                     post={post}
                     i={i}
-                    onScreen={this.state.i}
+                    onScreen={this.state.i == i}
                     onRefresh={()=>this.onRefresh()}
                   />
                 ))
@@ -152,9 +159,7 @@ class HomeScreen extends React.Component {
           <ActivityIndicator size="large" color="F00" />
         }
 
-        <TouchableOpacity onPress={()=> this.navigation.navigate("UploadScreen", { post: undefined })} style={styles.newpost}>
-          <Entypo name="plus" size={30} color="#FFF"/>
-        </TouchableOpacity>
+        <AddPostComponent navigation={this.navigation} />
 
       </SafeAreaView>
     );
@@ -178,7 +183,7 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 5,
     backgroundColor: "rgba(0, 0, 0, 0.2)",
-    paddingHorizontal: "1%"
+    paddingHorizontal: "5%"
   },
   profil: {
     width: 40,
@@ -196,6 +201,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     elevation : 10,
   },
+  groupicon: {
+    width: 90,
+    height: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: 'center',
+    justifyContent: "space-between",
+  },
   scrollView: {
     flex: 1,
     alignItems: 'center',
@@ -210,24 +223,5 @@ const styles = StyleSheet.create({
     fontSize: normalize(18),
     color: "#FFF",
   },
-  newpost: {
-    width: 60,
-    height: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F00",
-    borderRadius: 50,
-    position: "absolute",
-    bottom: 10,
-    zIndex: 5,
-    shadowColor: '#000',
-    shadowRadius: 5,
-    shadowOffset: {
-      height: 10,
-      width: 10
-    },
-    shadowOpacity: 0.5,
-    elevation : 10,
-  }
 });
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

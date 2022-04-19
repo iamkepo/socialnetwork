@@ -10,6 +10,8 @@ import { setStateAction } from '../store/ActivityActions';
 import { normalize } from "../utils/fonts";
 import { upload } from "../utils/sender";
 
+import MessageComponent from '../components/MessageComponent';
+
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
     setStateAction
@@ -38,6 +40,7 @@ class MessageScreen extends React.Component {
     }
     this.navigation = this.props.navigation;
     this.route = this.props.route;
+    this.scrollView = null
   }
 
   backAction = () => {
@@ -62,6 +65,7 @@ class MessageScreen extends React.Component {
 
   onRefresh(){
     this.setState({refreshing: true});
+    this.setState({messages: list_messages_test});
     // getmessages(this.route.params.discussion._id).then((response)=>{
     //   //console.log(response.data);
     //   this.setState({messages: response.data});
@@ -72,12 +76,16 @@ class MessageScreen extends React.Component {
   };
 
   pushmessage(){
-    // var data = {
-    //   user: this.props.data.user,
-    //   discussion_id: this.route.params.discussion._id,
-    //   message: this.state.message,
-    //   type: "text"
-    // };
+    var data = { 
+      _id: "message",
+      discussion_id: "discussion_id",
+      user:  { _id: undefined, psoeudo: "user", photo: "" }, 
+      message: this.state.message,
+      date: Date(),
+      type: "text"
+    };
+    this.setState({message: '', messages: [...this.state.messages, data]});
+    this.scrollView.scrollToEnd({animated: true});
     // setmessage(data)
     // .then((response)=>{
     //   //console.log(response.data);
@@ -103,7 +111,7 @@ class MessageScreen extends React.Component {
           </TouchableOpacity>
 
           <Text style={styles.title}>
-            {this.route.params.user.psoeudo}
+            {this.route.params.discussion.users.map((user, i)=>( user.user_id != undefined ? user.psoeudo+" " : ""))}
           </Text>
 
           <TouchableOpacity onPress={()=> console.log(1)}>
@@ -111,54 +119,38 @@ class MessageScreen extends React.Component {
           </TouchableOpacity>
 
         </View>
-        <View style={[styles.sous, {height: this.state.height}]}>
-          {
-            this.state.messages.length > 0 ?
-            <ScrollView
-              contentContainerStyle={styles.scrollView}
-              refreshControl={
-                <RefreshControl
-                  refreshing={this.state.refreshing}
-                  onRefresh={()=>this.onRefresh()}
-                />
-              }
-            >
 
-              {
-                this.state.messages.map((message, i)=>(
-                  <View key={i} style={styles.discussion}>
-                    <TouchableOpacity
-                      onPress={()=> this.navigation.navigate("ProfileScreen", { user: message.user._id == this.props.data.user._id ? this.props.data.user : message.user })}
-                      style={styles.profil}
-                    >
-                      {
-                        message.user.photo == "" ?
-                        <AntDesign name="user" size={normalize(20)} color="#FFF"/>
-                        :
-                        <Image source={{uri: message.user.photo}} resizeMode="cover" style={{width: "100%", height: "100%"}} />
-                      }
-                    </TouchableOpacity>
-                    <View style={styles.textbox}>
-                      <Text style={styles.name}>
-                        {message.user.psoeudo == "" ? message.user._id : message.user.psoeudo}
-                      </Text>
-                      <Text style={styles.message}> {message.message} </Text>
-                    </View>
-                    <MaterialIcons name="delete" size={20} color="#000"/>
-                  </View>
-                ))
-              }
-              <View style={{height: 30}} />
-            </ScrollView>
-            :
-            <Text style={styles.text}> Aucun message disponible pour le moment </Text>
-          }
+        <View style={[styles.sous, {height: this.state.height}]}>
+          
+          <ScrollView
+            refreshControl={
+              <RefreshControl
+                refreshing={this.state.refreshing}
+                onRefresh={()=>this.onRefresh()}
+              />
+            }
+            ref={(ref)=> this.scrollView = ref}
+
+          >
+
+            {
+              this.state.messages.map((message, i)=>(
+                <MessageComponent 
+                  key={i} 
+                  message={message}
+                  me={message.user._id == undefined}
+                  goto={()=> this.navigation.navigate("ProfileScreen", { user: message.user._id == this.props.data.user._id ? this.props.data.user : message.user })}
+                />
+              ))
+            }
+            <View style={{height: 30}} />
+          </ScrollView>
 
         </View>
 
         <View style={styles.sendbox}>
           <TextInput
-            style={[styles.input, {height: this.state.height == "80%" ? "60%" : "100%"}]}
+            style={styles.input}
             onChangeText={(text)=> this.setState({message: text})}
             value={this.state.message}
             placeholder="Ecrivez votre message ici ..."
@@ -175,7 +167,6 @@ class MessageScreen extends React.Component {
             disabled={this.state.message != "" ? false : true}
             style={[styles.btnsend, {
               backgroundColor: this.state.message != "" ? "#F00" : "#555",
-              height: this.state.height == "80%" ? "60%" : "100%"
             }]}
           >
             <MaterialIcons name="send" size={30} color="#FFF"/>
@@ -183,12 +174,24 @@ class MessageScreen extends React.Component {
           </TouchableOpacity>
 
         </View>
+
 			</SafeAreaView>
 		);
 
 	}
 
 }
+
+const list_messages_test = [
+  { 
+    _id: "message",
+    discussion_id: "discussion_id",
+    user:  { _id: "user2", psoeudo: "user2", photo: "" }, 
+    message: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsam tenetur adipisci, perspiciatis neque praesentium error asperiores accusantium. Dolorum, libero aliquam vitae optio, rem dolores reprehenderit, rerum error nostrum veniam recusandae.",
+    date: Date(),
+    type: "text"
+  }
+];
 
 const styles = StyleSheet.create({
   container: {
@@ -214,59 +217,20 @@ const styles = StyleSheet.create({
   sous: {
     flex: 1,
     width: "100%",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  scrollView: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: "flex-start",
-  },
-  discussion: {
-    width: "95%",
-    minHeight: 40,
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    borderWidth: 0.5,
-    borderColor: "#FFF",
-    borderRadius: 20,
-    marginTop: "5%",
-    padding: "2%"
-  },
-  profil: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 0.5,
-    borderColor: "#F00",
-    borderRadius: 50,
-  },
-  textbox: {
-    width: "75%",
-    height: "100%",
-  },
-  name: {
-    width: "100%",
-    fontSize: normalize(18),
-    fontWeight: "bold",
-    color: "#FFF"
-  },
-  message: {
-    width: "100%",
-    fontSize: normalize(15),
-    color: "#FFF"
   },
   sendbox: {
     width: "100%",
     height: "10%",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-evenly"
+    justifyContent: "space-evenly",
+    marginBottom: 10
   },
   input: {
     width: "80%",
+    height: 50,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#FFF",
@@ -275,7 +239,8 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   btnsend: {
-    width: "13%",
+    width: 50,
+    height: 50,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 50,

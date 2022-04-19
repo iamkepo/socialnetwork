@@ -1,6 +1,6 @@
 /** Importation globale : */
 import React from 'react';
-import { SafeAreaView, View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { SafeAreaView, View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
 import { SimpleLineIcons, Ionicons, AntDesign, MaterialIcons } from 'react-native-vector-icons';
 
 import { connect } from 'react-redux';
@@ -168,7 +168,16 @@ class CommentScreen extends React.Component {
                       <Text style={styles.comment}> {comment.comment} </Text>
                     </View>
                     {comment.user._id == this.props.data.user._id ?
-                    <TouchableOpacity onPress={()=> this.deletecomment(comment)}>
+                    <TouchableOpacity onPress={()=> 
+                      Alert.alert('Supprimer ce commentaire', 'Voulez vous vraiment supprimer cette commentaire ?', [
+                        {
+                          text: 'Annuler',
+                          onPress: () => console.log('Cancel Pressed'),
+                          style: 'cancel',
+                        },
+                        { text: 'OK', onPress: () => this.deletecomment(comment) },
+                      ])
+                    }>
                       <MaterialIcons name="delete" size={20} color="#F00"/>
                     </TouchableOpacity>
                     : <MaterialIcons name="delete" size={20} color="#000"/>

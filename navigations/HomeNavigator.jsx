@@ -16,6 +16,7 @@ import MessageScreen from '../screens/MessageScreen';
 import CommentScreen from '../screens/CommentScreen';
 import SinglePostScreen from '../screens/SinglePostScreen';
 import CashScreen from '../screens/CashScreen';
+import SearchScreen from '../screens/SearchScreen';
 import StarterScreen from '../screens/StarterScreen';
 
 
@@ -102,6 +103,13 @@ class HomeNavigator extends React.Component {
         <Stack.Screen
           name="CashScreen"
           component={CashScreen}
+          route={this.route}
+          navigation={this.navigation}
+          options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}
+        />
+        <Stack.Screen
+          name="SearchScreen"
+          component={SearchScreen}
           route={this.route}
           navigation={this.navigation}
           options={{ headerLeft: false, headerTitle: false, headerStyle: { height: 0 },}}

@@ -77,7 +77,7 @@ class StarterScreen extends React.Component {
     setuser(data).then((response1)=>{
       //console.log(response1.data.insertedId);
       if (response1.data.insertedId) {
-        storeData(response1.data.insertedId)
+        //storeData(response1.data.insertedId)
         getuser(response1.data.insertedId).then((response2)=>{
           //console.log(response2.data);
           this.props.userAction(response2.data);

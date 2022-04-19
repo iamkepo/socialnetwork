@@ -1,6 +1,5 @@
 import React from 'react';
-
-import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ImageBackground, Alert } from 'react-native';
 import { Ionicons, FontAwesome, AntDesign, MaterialIcons } from 'react-native-vector-icons';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Video, AVPlaybackStatus } from 'expo-av';
@@ -69,7 +68,10 @@ function PostViewComponent(props) {
 
       {
         props.post.type == "image" ?
-        <Image source={{uri: props.post.uri}} style={{ resizeMode: "contain", width: "100%", height: "100%"}} />
+        <Image 
+          source={{uri: props.post.uri}}  
+          style={{ resizeMode: "contain", width: "100%", height: "100%"}} 
+        />
         :
         image &&
         play ?
@@ -83,11 +85,11 @@ function PostViewComponent(props) {
             ref={video}
             style={{ width: "100%", height: "100%"}}
             source={{ uri: props.post.uri }}
-            shouldPlay={ props.i ==  props.onScreen && play ? true : false}
+            shouldPlay={ props.onScreen && play ? true : false}
             // useNativeControls
             resizeMode="contain"
             isLooping
-            onPlaybackStatusUpdate={status => (props.i !=  props.onScreen ? setplay(false) : false ,setStatus(() => status))}
+            onPlaybackStatusUpdate={status => (!props.onScreen ? setplay(false) : false ,setStatus(() => status))}
           />
 
         </TouchableOpacity>
@@ -165,7 +167,14 @@ function PostViewComponent(props) {
         {
           props.post.user._id == props.data.user._id ?
           <TouchableOpacity onPress={()=> {
-            setpost({ post_id: props.post._id, option: "delete", value: props.post}).then(()=> props.onRefresh());
+            Alert.alert('Supprimer cette publication', 'Voulez vous vraiment supprimer cette publication ?', [
+              {
+                text: 'Annuler',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+              },
+              { text: 'OK', onPress: () => setpost({ post_id: props.post._id, option: "delete", value: props.post}).then(()=> props.onRefresh()) },
+            ])
           }}>
             <MaterialIcons name="delete" size={30} color="#F00"/>
           </TouchableOpacity>
@@ -193,10 +202,9 @@ function PostViewComponent(props) {
       <Text style={styles.text}>
         {props.post.description}
         {"\n"}
-        {props.post.type == "video" ?
-        <><AntDesign name="eye" size={normalize(20)} color={vue ? "#F00" : "#FFF"}/>
-        {" " + (props.post.vue.length)}</>
-        : false}
+        { 
+          props.post.type == "video" && <><AntDesign name="eye" size={normalize(20)} color={vue ? "#F00" : "#FFF"}/>{ " " + props.post.vue.length}</>
+        }
       </Text>
 
     </View>

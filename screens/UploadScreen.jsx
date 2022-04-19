@@ -1,9 +1,10 @@
 /** Importation globale : */
 import React from 'react';
-import { View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Dimensions, Text, TouchableOpacity, BackHandler, Image, TextInput, StyleSheet, ActivityIndicator, Animated } from 'react-native';
 import { Entypo, Ionicons, AntDesign } from 'react-native-vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as VideoThumbnails from 'expo-video-thumbnails';
+import { Camera } from 'expo-camera';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -11,6 +12,9 @@ import { setStateAction } from '../store/ActivityActions';
 
 import { normalize } from "../utils/fonts";
 import { post, repost, setpost } from "../utils/sender";
+
+
+import LoaderComponent from "../components/LoaderComponent";
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
@@ -34,10 +38,12 @@ class UploadScreen extends React.Component {
       description: "",
       step: 0,
       uri: false,
-      loader: false
+      loader: false,
+      cameraOriantation: Camera.Constants.Type.back
     }
     this.navigation = this.props.navigation;
     this.route = this.props.route;
+    this.camera = null;
   }
 
   generateThumbnail = async () => {
@@ -61,43 +67,87 @@ class UploadScreen extends React.Component {
    this.backHandler.remove();
   }
 
-
-  componentDidMount(){
-//console.log(this.props.data.user);
-    if (this.route.params.post != undefined) {
+  async init(){
+    if (this.route.params.post.uri != undefined) {
       this.setState({
         file: this.route.params.post,
         description: this.route.params.post.description,
-        step: 1
+        step: 2
       });
       if (this.route.params.post.type == "video") {
         this.generateThumbnail();
       }
+    } else {
+      switch (this.route.params.post.type) {
+        case "picture":
+          this.pickImage(ImagePicker.MediaTypeOptions.Images);
+          this.setState({step: 1});
+          break;
+
+        case "video":
+          this.pickImage(ImagePicker.MediaTypeOptions.Videos);
+          this.setState({step: 1});
+          break;
+      
+        default:
+          const { status } = await Camera.requestCameraPermissionsAsync();
+          const { status1 } = await Camera.requestMicrophonePermissionsAsync();
+          this.setState({step: 0});
+          break;
+      }
     }
+  }
+  componentDidMount(){
+    //console.log(this.route.params.post);
+    
+    this.init();
 
     this.backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
       this.backAction
     );
   }
-  async pickImage(type, y=4) {
-    let p = await ImagePicker.launchImageLibraryAsync({
+
+  runCamera = async () => {
+    if (this.camera) {
+      let video = await this.camera.recordAsync({maxDuration: 30});
+      //console.log(video);
+      this.setState({loader: true});
+      video.type = "video";
+      this.setState({file: video, step: 1, loader: false})
+    }
+  }
+  snap = async () => {
+    if (this.camera) {
+      this.setState({loader: true});
+      let photo = await this.camera.takePictureAsync();
+      //console.log(photo);
+      photo.type = "image";
+      this.setState({file: photo, step: 1, loader: false})
+    }
+  };
+  async pickImage(type) {
+    let photo = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: type,
-      allowsEditing: true,
-      aspect: [4, y],
+      allowsEditing: false,
       quality: 1,
     });
 
-    //console.log(p);
-    if (p.cancelled == false) {
-      this.setState({file: p})
+    //console.log(photo);
+    if (photo.cancelled == false) {
+      this.setState({file: photo})
     }
 
   };
 
   back() {
     if (this.state.step > 0) {
-      this.setState({step: this.state.step-1})
+      if (this.state.step == 1 && 
+        (this.route.params.post.type == "picture" || 
+        this.route.params.post.type == "video" ||
+        this.route.params.post.type == "image")) {
+        this.navigation.goBack()
+      }else{this.setState({step: this.state.step-1})}
     } else {
       this.navigation.goBack()
     }
@@ -132,96 +182,82 @@ class UploadScreen extends React.Component {
 	render() {
 		return (
 			<View style={{ width: "100%", height: "100%", backgroundColor: "#000", alignItems: "center",  justifyContent: "flex-start", position: "relative" }}>
-        <TouchableOpacity
-          onPress={()=> this.back()}
-          style={{ width: "95%", height: 50, alignItems: "center", flexDirection: "row", justifyContent: "space-between"}}
-        >
-          <Ionicons name="arrow-back" size={30} color="#FFF"/>
+        <View style={{ width: "95%", height: 50, alignItems: "center", flexDirection: "row", justifyContent: "space-between"}}>
+          <TouchableOpacity onPress={()=> this.back()}>
+            <Ionicons name="arrow-back" size={30} color="#FFF"/>
+          </TouchableOpacity>
+          
           <Text style={{width: "80%",fontSize: normalize(20), fontWeight: "bold", color: "#FFF", }}>
             New Poste
           </Text>
-        </TouchableOpacity>
+        </View>
         {
-          this.state.step == 0 ?
-
-
+          this.state.step == 0 &&
+          <View style={{ width: "100%", height: "90%", alignItems: "center", justifyContent: "space-between" }}>
+            <Camera 
+              style={{ width: "100%", height: "90%", alignItems: "center", justifyContent: "center" }} 
+              type={this.state.cameraOriantation}
+              ratio="4:6"
+              ref={ref => {
+                this.camera = ref;
+              }}
+            >
+              <TouchableOpacity
+                style={{width: "100%", height: "100%"}}
+                onPress={() => {
+                  this.setState({cameraOriantation:
+                    this.state.cameraOriantation === Camera.Constants.Type.back
+                      ? Camera.Constants.Type.front
+                      : Camera.Constants.Type.back
+                  });
+                }}>
+              </TouchableOpacity>
+            </Camera>
+            { this.route.params.post.type == "camera" &&
+              <TouchableOpacity 
+                onPress={()=> this.snap()} 
+                style={{width: 60, height: 60, alignItems: "center", justifyContent: "center", backgroundColor: "#FFF", borderRadius: 50, borderColor:"#F00", borderWidth: 3 }}
+              >
+                <Entypo name="camera" size={25} color="#000"/>
+              </TouchableOpacity>
+            }
+            { this.route.params.post.type == "video-camera" &&
+              <LoaderComponent runCamera={()=> this.runCamera()} stopCamera={()=> this.camera.stopRecording()} />
+            }
+          </View>
+        }
+        {
+          this.state.step == 1 &&
           <View  style={{ width: "100%", height: "90%", alignItems: "center", justifyContent: "flex-start" }}>
 
-            <Text style={{width: "95%", marginVertical: "5%", textAlign: "center",fontSize: normalize(18), fontWeight: "bold", color: "#FFF", }}>
-              Cliquer pour séléctionner une photo ou un video
-            </Text>
-            {
-              this.state.file.uri != undefined ?
-              <View style={styles.cadre} >
+            <TouchableOpacity onPress={()=> this.init()}  style={styles.cadre}>
+              {
+                (this.state.file.uri != undefined || this.state.uri) ?
                 <Image
                   source={{ uri: this.state.uri ? this.state.uri : this.state.file.uri  }}
                   style={{ width: "100%", height: "100%" }}
                   resizeMode="contain"
                 />
-              </View>
-              :
-              <View style={styles.boxaction}>
-                {
-                  this.state.file.type == "image" ?
-                  <>
-                    <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Images, 3)} style={styles.mini}>
-                      <Text style={styles.text}> 4, 3 </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Images, 4)} style={styles.mini}>
-                      <Text style={styles.text}> 4, 4 </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Images, 5)} style={styles.mini}>
-                      <Text style={styles.text}> 4, 5 </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Images, 6)} style={styles.mini}>
-                      <Text style={styles.text}> 4, 6 </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Images, 7)} style={styles.mini}>
-                      <Text style={styles.text}> 4, 7 </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Images, 8)} style={styles.mini}>
-                      <Text style={styles.text}> 4, 8 </Text>
-                    </TouchableOpacity>
-                  </>
-                  :
-                  <>
-                    <TouchableOpacity onPress={()=> this.setState({file: { ...this.state.file, type: "image"}})} style={styles.newpost}>
-                      <AntDesign name="picture" size={30} color="#FFF"/>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={()=> this.pickImage(ImagePicker.MediaTypeOptions.Videos)} style={styles.newpost}>
-                      <Entypo name="video" size={30} color="#FFF"/>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=> alert("Cette fonctionnalité n'est pas encore disponible")} style={styles.newpost}>
-                      <Entypo name="camera" size={30} color="#FFF"/>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={()=> alert("Cette fonctionnalité n'est pas encore disponible")} style={styles.newpost}>
-                      <Entypo name="video-camera" size={30} color="#FFF"/>
-                    </TouchableOpacity>
-                  </>
-                }
-
-              </View>
-            }
+                :
+                <AntDesign name="picture" size={25} color="#FFF"/>
+              }
+            </TouchableOpacity>
 
             <TouchableOpacity
               disabled={this.state.file.uri != undefined ? false : true}
-              onPress={()=> this.setState({step: 1})}
+              onPress={()=> this.setState({step: 2})}
               style={{
                 backgroundColor: this.state.file.uri != undefined ? "#BB0000" : "#555",
                 width: "95%",height:50,justifyContent: "center",borderRadius: 50,marginTop: "15%"
               }}
             >
-
-              <Text style={{ color: "#FFF", fontSize: normalize(14), textAlign: "center" }}>
-                Suivant
-              </Text>
-
+              <Text style={{ color: "#FFF", fontSize: normalize(14), textAlign: "center" }}>Suivant</Text>
             </TouchableOpacity>
 
           </View>
-          :
+        }
+        {
+          this.state.step == 2 &&
           <View  style={{ width: "100%", height: "90%", alignItems: "center", justifyContent: "flex-start" }}>
 
             <Text style={{width: "95%", marginVertical: "5%", textAlign: "center",fontSize: normalize(18), fontWeight: "bold", color: "#FFF", }}>
@@ -229,16 +265,7 @@ class UploadScreen extends React.Component {
             </Text>
 
             <TextInput
-              style={{
-                width: "95%",
-                height: "20%",
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: "#FFF",
-                marginVertical: "5%",
-                color: "#FFF",
-                padding: 10
-              }}
+              style={styles.input}
               onChangeText={(text)=> this.setState({description: text})}
               value={this.state.description}
               multiline={true}
@@ -251,14 +278,7 @@ class UploadScreen extends React.Component {
 
             <TouchableOpacity
               onPress={()=> this.postter()}
-              style={{
-                backgroundColor: "#BB0000",
-                width: "95%",
-                height:50,
-                justifyContent: "center",
-                borderRadius: 50,
-                marginTop: "10%"
-              }}
+              style={styles.newpost}
             >
 
               <Text style={{ color: "#FFF", fontSize: normalize(14), textAlign: "center" }}>
@@ -268,10 +288,9 @@ class UploadScreen extends React.Component {
             </TouchableOpacity>
 
           </View>
-
         }
-        {this.state.loader &&
-          <View style={{width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", alignItems: "center",  justifyContent: "center", position: "absolute", zIndex: 5, top: 0, bottom: 0, left: 0, right: 0 }}>
+        { this.state.loader &&
+          <View style={styles.loader}>
             <ActivityIndicator size="large" color="F00" />
           </View>
         }
@@ -289,15 +308,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: "#000",
   },
-  boxaction: {
-    width: "95%",
-    height: "45%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    flexWrap: "wrap",
-    marginVertical: "5%",
-  },
   cadre: {
     width: "95%",
     height: "60%",
@@ -309,41 +319,36 @@ const styles = StyleSheet.create({
     marginVertical: "5%",
     overflow: "hidden"
   },
-  scrollView: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mini: {
-    width: "25%",
-    height: "25%",
-    alignItems: "center",
-    justifyContent: "center",
+  input: {
+    width: "95%",
+    height: "20%",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#FFF",
     marginVertical: "5%",
-    marginHorizontal: "5%",
-    overflow: "hidden"
-  },
-  text: {
-    width: "95%",
-    marginVertical: "5%",
-    textAlign: "center",
-    fontSize: normalize(18),
-    fontWeight: "bold",
     color: "#FFF",
+    padding: 10
   },
   newpost: {
-    width: "45%",
-    height: "45%",
-    alignItems: "center",
+    backgroundColor: "#BB0000",
+    width: "95%",
+    height:50,
     justifyContent: "center",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#FFF",
-    marginBottom: "5%",
-    overflow: "hidden"
+    borderRadius: 50,
+    marginTop: "10%"
+  },
+  loader: {
+    width: "100%", 
+    height: "100%", 
+    backgroundColor: "rgba(0, 0, 0, 0.5)", 
+    alignItems: "center",  
+    justifyContent: "center", 
+    position: "absolute", 
+    zIndex: 5, 
+    top: 0, 
+    bottom: 0, 
+    left: 0, 
+    right: 0 
   }
 });
 export default connect(mapStateToProps, mapDispatchToProps)(UploadScreen);
